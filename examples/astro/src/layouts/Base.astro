@@ -1,0 +1,17 @@
+---
+import 'shiki-tinymist/style-rich.css'
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>shiki-tinymist Astro</title>
+  </head>
+  <body>
+    <slot />
+    <script>
+      import { initTinymistFloating } from 'shiki-tinymist/client'
+      initTinymistFloating()
+    </script>
+  </body>
+</html>

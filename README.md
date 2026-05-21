@@ -59,6 +59,113 @@ import { initTinymistFloating } from 'shiki-tinymist/client'
 initTinymistFloating()
 ```
 
+## Framework Adapters
+
+Tinymist queries are asynchronous, so the framework adapters prepare Typst
+fences before the normal Markdown renderer finishes.
+
+### Rehype
+
+```ts
+import rehypeStringify from 'rehype-stringify'
+import remarkParse from 'remark-parse'
+import remarkRehype from 'remark-rehype'
+import { unified } from 'unified'
+import { rehypeTinymist } from 'shiki-tinymist/rehype'
+
+const html = await unified()
+  .use(remarkParse)
+  .use(remarkRehype)
+  .use(rehypeTinymist({ explicitTrigger: true }))
+  .use(rehypeStringify)
+  .process(markdown)
+```
+
+### markdown-it
+
+`markdown-it` renders synchronously, so the adapter adds an async
+`renderTinymist` helper instead of replacing the sync fence renderer.
+
+```ts
+import MarkdownIt from 'markdown-it'
+import { markdownItTinymist } from 'shiki-tinymist/markdown-it'
+
+const md = new MarkdownIt({ html: true })
+md.use(markdownItTinymist({ explicitTrigger: true }))
+
+const html = await md.renderTinymist(markdown)
+```
+
+### VitePress
+
+```ts
+import { defineConfig } from 'vitepress'
+import { vitepressTinymist } from 'shiki-tinymist/vitepress'
+
+export default defineConfig({
+  vite: {
+    plugins: [vitepressTinymist({ explicitTrigger: true })],
+  },
+})
+```
+
+### Astro
+
+```ts
+import { defineConfig } from 'astro/config'
+import { astroTinymist } from 'shiki-tinymist/astro'
+
+export default defineConfig({
+  integrations: [astroTinymist({ explicitTrigger: true })],
+})
+```
+
+### MDX
+
+```ts
+import { mdxTinymist } from 'shiki-tinymist/mdx'
+
+export default {
+  rehypePlugins: [mdxTinymist({ explicitTrigger: true })],
+}
+```
+
+### Next
+
+```ts
+import createMDX from '@next/mdx'
+import { nextTinymist } from 'shiki-tinymist/next'
+
+const withMDX = createMDX({
+  options: {
+    rehypePlugins: [nextTinymist({ explicitTrigger: true })],
+  },
+})
+
+export default withMDX({
+  pageExtensions: ['js', 'jsx', 'md', 'mdx', 'ts', 'tsx'],
+})
+```
+
+### Nuxt
+
+```ts
+export default defineNuxtConfig({
+  css: ['shiki-tinymist/style-rich.css'],
+  content: {
+    build: {
+      markdown: {
+        rehypePlugins: {
+          'shiki-tinymist/nuxt': { explicitTrigger: true },
+        },
+      },
+    },
+  },
+})
+```
+
+Full-feature examples for every adapter live in `examples/`.
+
 ## Marker Syntax
 
 Use a Typst line comment under the target code.
@@ -122,11 +229,6 @@ npm run build
 ```
 
 `npm run demo` writes `demo/index.html`.
-
-## Status
-
-This is an initial scaffold. The public API is expected to change while the
-Tinymist query model and renderer output settle.
 
 ## Why a Prepare Step?
 

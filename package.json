@@ -33,12 +33,41 @@
       "types": "./dist/client.d.ts",
       "import": "./dist/client.js"
     },
+    "./rehype": {
+      "types": "./dist/rehype.d.ts",
+      "import": "./dist/rehype.js"
+    },
+    "./markdown-it": {
+      "types": "./dist/markdown-it.d.ts",
+      "import": "./dist/markdown-it.js"
+    },
+    "./vitepress": {
+      "types": "./dist/vitepress.d.ts",
+      "import": "./dist/vitepress.js"
+    },
+    "./astro": {
+      "types": "./dist/astro.d.ts",
+      "import": "./dist/astro.js"
+    },
+    "./mdx": {
+      "types": "./dist/mdx.d.ts",
+      "import": "./dist/mdx.js"
+    },
+    "./next": {
+      "types": "./dist/next.d.ts",
+      "import": "./dist/next.js"
+    },
+    "./nuxt": {
+      "types": "./dist/nuxt.d.ts",
+      "import": "./dist/nuxt.js"
+    },
     "./style.css": "./style.css",
     "./style-rich.css": "./style-rich.css",
     "./package.json": "./package.json"
   },
   "files": [
     "dist",
+    "examples",
     "*.css",
     "README.md"
   ],

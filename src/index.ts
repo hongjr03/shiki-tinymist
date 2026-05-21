@@ -1,6 +1,17 @@
 export { parseTinymistCode, shouldRunTinymist } from './parser.js'
 export { rendererRich } from './renderer.js'
 export {
+  tinymistRichStyleImport,
+  tinymistFloatingClientScript,
+} from './adapters/html.js'
+export { renderTinymistCode, renderTinymistHast } from './adapters/render.js'
+export {
+  parseFenceInfo,
+  renderTinymistMarkdown,
+  shouldRenderTinymistFence,
+} from './adapters/markdown.js'
+export { tinymistMarkdownVitePlugin } from './adapters/vite.js'
+export {
   createTinymistTransformer,
   prepareTinymistCode,
   transformerTinymist,
@@ -37,3 +48,15 @@ export type {
   TinymistVirtualFile,
   TransformerTinymistOptions,
 } from './types.js'
+export type {
+  TinymistRenderOptions,
+  TinymistShikiOptions,
+} from './adapters/render.js'
+export type {
+  TinymistFenceInfo,
+  TinymistMarkdownOptions,
+} from './adapters/markdown.js'
+export type {
+  TinymistMarkdownVitePlugin,
+  TinymistMarkdownVitePluginOptions,
+} from './adapters/vite.js'
