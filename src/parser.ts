@@ -1,3 +1,21 @@
+import {
+  normalizeDiagnosticsDirectives,
+  parseDirectiveLine,
+} from './parser/directives.js'
+import {
+  applyCuts,
+  parseCutDirective,
+  type CutDirective,
+} from './parser/cuts.js'
+import { parseMarkerLine } from './parser/markers.js'
+import {
+  defaultFileName,
+  getFile,
+  lineKey,
+  normalizeFileName,
+  type OutputLineDraft,
+  type QueryFileDraft,
+} from './parser/model.js'
 import type {
   ParsedTinymistCode,
   TinymistDirective,
@@ -6,19 +24,6 @@ import type {
 } from './types.js'
 
 const defaultTriggers = ['tinymist', 'typst-lsp']
-const defaultFileName = 'index.typ'
-
-interface QueryFileDraft {
-  fileName: string
-  lines: string[]
-}
-
-interface OutputLineDraft {
-  id: number
-  text: string
-  fileName?: string
-  queryLine?: number
-}
 
 export function shouldRunTinymist(
   meta: string | undefined,
@@ -143,11 +148,6 @@ export function parseTinymistCode(source: string): ParsedTinymistCode {
   }
 }
 
-interface CutDirective {
-  kind: 'before' | 'after' | 'start' | 'end'
-  outputLineIndex: number
-}
-
 function hasTrigger(meta: string, triggers: string[]): boolean {
   return triggers.some((trigger) => {
     const escaped = escapeRegExp(trigger)
@@ -155,194 +155,8 @@ function hasTrigger(meta: string, triggers: string[]): boolean {
   })
 }
 
-function getFile(
-  files: Map<string, QueryFileDraft>,
-  fileName: string,
-): QueryFileDraft {
-  const existing = files.get(fileName)
-  if (existing) {
-    return existing
-  }
-
-  const file = {
-    fileName,
-    lines: [],
-  }
-  files.set(fileName, file)
-  return file
-}
-
-function parseDirectiveLine(
-  line: string,
-  sourceLine: number,
-): TinymistDirective | undefined {
-  const match = /^\s*\/\/\s*@([A-Za-z][\w-]*)(?:\s*:\s*(.*))?\s*$/.exec(line)
-  if (!match) {
-    return undefined
-  }
-
-  const name = normalizeDirectiveName(match[1] ?? '')
-  const value = match[2]?.trim()
-
-  return {
-    name,
-    line: sourceLine,
-    ...(value ? { value } : {}),
-  }
-}
-
-function parseCutDirective(
-  line: string,
-  outputLineIndex: number,
-): CutDirective | undefined {
-  const match = /^\s*\/\/\s*---cut(?:-(before|after|start|end))?---\s*$/.exec(
-    line,
-  )
-  if (!match) {
-    return undefined
-  }
-
-  return {
-    kind: normalizeCutKind(match[1]),
-    outputLineIndex,
-  }
-}
-
-function parseMarkerLine(
-  line: string,
-  previousOutputLine: OutputLineDraft | undefined,
-  currentFile: QueryFileDraft,
-): Omit<TinymistMarker, 'id'> | undefined {
-  if (!previousOutputLine?.queryLine) {
-    return undefined
-  }
-
-  const query = /^(\s*)\/\/([ \t]*)(\^+)([?|])([ \t]*(.*))?$/.exec(line)
-  if (query) {
-    const leadingIndent = query[1] ?? ''
-    const spaces = query[2] ?? ''
-    const carets = query[3] ?? ''
-    const operator = query[4]
-    const label = query[6]?.trim()
-    const column = leadingIndent.length + spaces.length + 1
-
-    return {
-      line: previousOutputLine.id,
-      column,
-      length: carets.length,
-      kind: operator === '|' ? 'completion' : 'hover',
-      fileName: previousOutputLine.fileName ?? currentFile.fileName,
-      queryLine: previousOutputLine.queryLine,
-      queryColumn: column,
-      ...(label ? { label } : {}),
-    }
-  }
-
-  const highlight = /^(\s*)\/\/([ \t]*)(\^+)([ \t]*(.*))?$/.exec(line)
-  if (!highlight) {
-    return undefined
-  }
-
-  const leadingIndent = highlight[1] ?? ''
-  const spaces = highlight[2] ?? ''
-  const carets = highlight[3] ?? ''
-  const label = highlight[5]?.trim()
-  const column = leadingIndent.length + spaces.length + 1
-
-  return {
-    line: previousOutputLine.id,
-    column,
-    length: carets.length,
-    kind: 'highlight',
-    fileName: previousOutputLine.fileName ?? currentFile.fileName,
-    queryLine: previousOutputLine.queryLine,
-    queryColumn: column,
-    ...(label ? { label } : {}),
-  }
-}
-
-function applyCuts(
-  outputLines: OutputLineDraft[],
-  cuts: CutDirective[],
-): OutputLineDraft[] {
-  if (!cuts.length) {
-    return outputLines
-  }
-
-  const visible = outputLines.map(() => true)
-  let beforeIndex = 0
-  let afterIndex = outputLines.length
-  const startStack: number[] = []
-
-  for (const cut of cuts) {
-    if (cut.kind === 'before') {
-      beforeIndex = Math.max(beforeIndex, cut.outputLineIndex)
-    } else if (cut.kind === 'after') {
-      afterIndex = Math.min(afterIndex, cut.outputLineIndex)
-    } else if (cut.kind === 'start') {
-      startStack.push(cut.outputLineIndex)
-    } else {
-      const start = startStack.pop()
-      if (start === undefined) {
-        continue
-      }
-
-      for (let index = start; index < cut.outputLineIndex; index += 1) {
-        visible[index] = false
-      }
-    }
-  }
-
-  return outputLines.filter((_, index) => {
-    return visible[index] && index >= beforeIndex && index < afterIndex
-  })
-}
-
-function normalizeDiagnosticsDirectives(directives: TinymistDirective[]): {
-  mode: ParsedTinymistCode['diagnosticsMode']
-  expectedErrors: string[]
-} {
-  const noErrors = directives.some((directive) => directive.name === 'noErrors')
-  const expectedErrors = directives
-    .filter((directive) => directive.name === 'errors')
-    .flatMap((directive) => directive.value?.split(/[,\s]+/) ?? [])
-    .map((value) => value.trim())
-    .filter(Boolean)
-
-  if (noErrors) {
-    return { mode: 'hide', expectedErrors }
-  }
-
-  if (expectedErrors.length) {
-    return { mode: 'expect', expectedErrors }
-  }
-
-  return { mode: 'show', expectedErrors }
-}
-
-function normalizeDirectiveName(name: string): string {
-  if (name === 'no-errors') return 'noErrors'
-  if (name === 'show-emit') return 'showEmit'
-  if (name === 'show-emitted-file') return 'showEmittedFile'
-  return name
-}
-
-function normalizeCutKind(value: string | undefined): CutDirective['kind'] {
-  if (value === 'after' || value === 'start' || value === 'end') {
-    return value
-  }
-
-  return 'before'
-}
-
-function normalizeFileName(fileName: string): string {
-  return fileName.trim().replace(/\\/g, '/')
-}
-
-export function lineKey(fileName: string, line: number): string {
-  return `${fileName}:${line}`
-}
-
 function escapeRegExp(input: string): string {
   return input.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 }
+
+export { lineKey }
