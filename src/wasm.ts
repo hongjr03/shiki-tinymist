@@ -1,4 +1,6 @@
 import type {
+  TinymistCompletion,
+  TinymistCompletionItem,
   TinymistDiagnostic,
   TinymistHover,
   TinymistLanguageServerInstance,
@@ -33,7 +35,10 @@ class TinymistWasmSession {
   readonly #diagnostics = new Map<string, TinymistDiagnostic[]>()
   readonly #server: TinymistLanguageServerInstance
 
-  constructor(module: TinymistWasmModule, options: TinymistWasmProviderOptions) {
+  constructor(
+    module: TinymistWasmModule,
+    options: TinymistWasmProviderOptions,
+  ) {
     this.#options = options
 
     const Server = module.TinymistLanguageServer
@@ -81,22 +86,45 @@ class TinymistWasmSession {
     })
 
     const hovers = await Promise.all(
-      input.markers.map(async (marker): Promise<TinymistHover> => {
-        const response = await this.#request('textDocument/hover', {
-          textDocument: { uri: input.uri },
-          position: {
-            line: marker.line - 1,
-            character: marker.column - 1,
-          },
-        })
-        const range = normalizeHoverRange(response)
+      input.markers
+        .filter((marker) => marker.kind === 'hover')
+        .map(async (marker): Promise<TinymistHover> => {
+          const response = await this.#request('textDocument/hover', {
+            textDocument: { uri: input.uri },
+            position: {
+              line: marker.line - 1,
+              character: marker.column - 1,
+            },
+          })
+          const range = normalizeHoverRange(response)
 
-        return {
-          markerId: marker.id,
-          markdown: stringifyHover(response),
-          ...(range ?? {}),
-        }
-      }),
+          return {
+            markerId: marker.id,
+            markdown: stringifyHover(response),
+            ...(range ?? {}),
+          }
+        }),
+    )
+
+    const completions = await Promise.all(
+      input.markers
+        .filter((marker) => marker.kind === 'completion')
+        .map(async (marker): Promise<TinymistCompletion> => {
+          const response = await this.#request('textDocument/completion', {
+            textDocument: { uri: input.uri },
+            position: {
+              line: marker.line - 1,
+              character: marker.column - 1,
+            },
+          })
+
+          return {
+            markerId: marker.id,
+            line: marker.line,
+            column: marker.column,
+            items: normalizeCompletionItems(response),
+          }
+        }),
     )
 
     this.#notification('textDocument/didClose', {
@@ -105,6 +133,7 @@ class TinymistWasmSession {
 
     return {
       hovers,
+      completions,
       diagnostics: this.#diagnostics.get(input.uri) ?? [],
     }
   }
@@ -268,12 +297,14 @@ function stringifyHover(response: unknown): string {
 function normalizeHoverRange(
   response: unknown,
 ): Pick<TinymistHover, 'line' | 'column' | 'length'> | undefined {
-  const range = (response as {
-    range?: {
-      start?: { line?: unknown; character?: unknown }
-      end?: { line?: unknown; character?: unknown }
-    }
-  } | null)?.range
+  const range = (
+    response as {
+      range?: {
+        start?: { line?: unknown; character?: unknown }
+        end?: { line?: unknown; character?: unknown }
+      }
+    } | null
+  )?.range
 
   const startLine = range?.start?.line
   const startCharacter = range?.start?.character
@@ -295,6 +326,105 @@ function normalizeHoverRange(
     column: startCharacter + 1,
     length: Math.max(1, endCharacter - startCharacter),
   }
+}
+
+function normalizeCompletionItems(response: unknown): TinymistCompletionItem[] {
+  const rawItems = Array.isArray(response)
+    ? response
+    : (response as { items?: unknown[] } | undefined)?.items
+
+  if (!Array.isArray(rawItems)) {
+    return []
+  }
+
+  return rawItems.flatMap((item) => {
+    const normalized = normalizeCompletionItem(item)
+    return normalized ? [normalized] : []
+  })
+}
+
+function normalizeCompletionItem(
+  value: unknown,
+): TinymistCompletionItem | undefined {
+  if (!value || typeof value !== 'object') {
+    return undefined
+  }
+
+  const item = value as {
+    label?: unknown
+    kind?: unknown
+    detail?: unknown
+    documentation?: unknown
+    deprecated?: unknown
+    insertText?: unknown
+  }
+
+  if (typeof item.label !== 'string' || !item.label) {
+    return undefined
+  }
+
+  const normalized: TinymistCompletionItem = {
+    label: item.label,
+  }
+
+  if (typeof item.kind === 'number') {
+    const kind = normalizeCompletionKind(item.kind)
+    if (kind) {
+      normalized.kind = kind
+    }
+  } else if (typeof item.kind === 'string') {
+    normalized.kind = item.kind
+  }
+
+  if (typeof item.detail === 'string' && item.detail) {
+    normalized.detail = item.detail
+  }
+
+  const documentation = stringifyMarkup(item.documentation)
+  if (documentation) {
+    normalized.documentation = documentation
+  }
+
+  if (item.deprecated === true) {
+    normalized.deprecated = true
+  }
+
+  if (typeof item.insertText === 'string' && item.insertText) {
+    normalized.insertText = item.insertText
+  }
+
+  return normalized
+}
+
+function normalizeCompletionKind(kind: number): string | undefined {
+  return [
+    undefined,
+    'text',
+    'method',
+    'function',
+    'constructor',
+    'field',
+    'variable',
+    'class',
+    'interface',
+    'module',
+    'property',
+    'unit',
+    'value',
+    'enum',
+    'keyword',
+    'snippet',
+    'color',
+    'file',
+    'reference',
+    'folder',
+    'enum-member',
+    'constant',
+    'struct',
+    'event',
+    'operator',
+    'type-parameter',
+  ][kind]
 }
 
 function stringifyMarkup(value: unknown): string {
@@ -363,8 +493,13 @@ function throwIfLspError(value: unknown): void {
   }
 
   const maybeError = value as { code?: unknown; message?: unknown }
-  if (typeof maybeError.code === 'number' && typeof maybeError.message === 'string') {
-    throw new Error(`Tinymist LSP error ${maybeError.code}: ${maybeError.message}`)
+  if (
+    typeof maybeError.code === 'number' &&
+    typeof maybeError.message === 'string'
+  ) {
+    throw new Error(
+      `Tinymist LSP error ${maybeError.code}: ${maybeError.message}`,
+    )
   }
 }
 

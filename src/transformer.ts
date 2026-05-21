@@ -37,12 +37,15 @@ export async function prepareTinymistCode(
   const parsed = parseTinymistCode(code)
   const provider: TinymistProvider =
     options.provider ?? createTinymistWasmProvider()
+  const queryMarkers = parsed.markers.filter(
+    (marker) => marker.kind !== 'highlight',
+  )
   const queryResult =
-    parsed.markers.length > 0
+    queryMarkers.length > 0
       ? await provider.query({
           code: parsed.code,
           uri: resolveDocumentUri(options.documentUri, parsed.code),
-          markers: parsed.markers,
+          markers: queryMarkers,
         })
       : { hovers: [] }
 
@@ -57,7 +60,12 @@ export function transformerTinymist(
     langAlias = { typ: 'typst' },
     explicitTrigger = false,
     trigger = defaultTrigger,
-    disableTriggers = ['notinymist', 'no-tinymist', 'notypst-lsp', 'no-typst-lsp'],
+    disableTriggers = [
+      'notinymist',
+      'no-tinymist',
+      'notypst-lsp',
+      'no-typst-lsp',
+    ],
     renderer = rendererRich(),
     throws = true,
   } = options
@@ -109,11 +117,7 @@ export function transformerTinymist(
 
         return result.code
       } catch (error) {
-        const replacement = onTinymistError(
-          error,
-          code,
-          lang ?? '',
-        )
+        const replacement = onTinymistError(error, code, lang ?? '')
         if (typeof replacement === 'string') {
           return replacement
         }
@@ -128,10 +132,9 @@ export function transformerTinymist(
 
       return splitTokens(
         tokens,
-        result.nodes.flatMap((node) => [
-          node.start,
-          node.start + Math.max(node.length, 1),
-        ]),
+        result.nodes
+          .filter((node) => node.length > 0)
+          .flatMap((node) => [node.start, node.start + node.length]),
       )
     },
 
@@ -215,7 +218,9 @@ export function transformerTinymist(
         if (node.length === 0) {
           return tokensMap
             .filter(([line, tokenStart, tokenEnd]) => {
-              return line === node.line && tokenStart < start && start <= tokenEnd
+              return (
+                line === node.line && tokenStart < start && start <= tokenEnd
+              )
             })
             .map((item) => item[3])
         }
@@ -277,6 +282,13 @@ export function transformerTinymist(
       const highlightActions: (() => void)[] = []
 
       for (const node of result.nodes) {
+        if (node.type === 'completion') {
+          if (renderer.lineCompletion) {
+            insertAfterLine(node.line, renderer.lineCompletion.call(this, node))
+          }
+          continue
+        }
+
         const tokens = locateTextTokens(node)
 
         if (
@@ -311,6 +323,19 @@ export function transformerTinymist(
           continue
         }
 
+        if (node.type === 'highlight') {
+          if (renderer.nodesHighlight) {
+            highlightActions.push(() => {
+              wrapTokens(
+                node,
+                (targets) =>
+                  renderer.nodesHighlight?.call(this, node, targets) ?? targets,
+              )
+            })
+          }
+          continue
+        }
+
         hoverActions.push(() => {
           if (tokens.some((token) => tokensSkipHover.has(token))) {
             return
@@ -324,7 +349,9 @@ export function transformerTinymist(
               properties: {},
               children: targets,
             }
-            return [renderer.nodeHover.call(this, node, wrappedToken) as HastNode]
+            return [
+              renderer.nodeHover.call(this, node, wrappedToken) as HastNode,
+            ]
           })
         })
       }
@@ -349,7 +376,9 @@ export function transformerTinymist(
     const enabledByLang = !!lang && langs.includes(lang)
     const enabledByTrigger = !explicitTrigger || trigger.test(rawMeta)
     const disabled = disableTriggers.some((item) => {
-      return typeof item === 'string' ? rawMeta.includes(item) : item.test(rawMeta)
+      return typeof item === 'string'
+        ? rawMeta.includes(item)
+        : item.test(rawMeta)
     })
 
     return enabledByLang && enabledByTrigger && !disabled
@@ -364,7 +393,44 @@ function createTinymistReturn(
   const nodes: TinymistNode[] = []
 
   for (const marker of parsed.markers) {
-    const hover = queryResult?.hovers.find((item) => item.markerId === marker.id)
+    if (marker.kind === 'highlight') {
+      const line = marker.line - 1
+      const character = marker.column - 1
+      nodes.push({
+        type: 'highlight',
+        line,
+        character,
+        length: marker.length,
+        start: (lineOffsets[line] ?? 0) + character,
+      })
+      continue
+    }
+
+    if (marker.kind === 'completion') {
+      const completion = queryResult?.completions?.find(
+        (item) => item.markerId === marker.id,
+      )
+      if (!completion?.items.length) {
+        continue
+      }
+
+      const line = (completion.line ?? marker.line) - 1
+      const character = (completion.column ?? marker.column) - 1
+      nodes.push({
+        type: 'completion',
+        markerId: marker.id,
+        line,
+        character,
+        length: 0,
+        start: (lineOffsets[line] ?? 0) + character,
+        items: completion.items,
+      })
+      continue
+    }
+
+    const hover = queryResult?.hovers.find(
+      (item) => item.markerId === marker.id,
+    )
     if (!hover?.markdown && !marker.label) {
       continue
     }

@@ -62,21 +62,38 @@ function parseMarkerLine(
     return undefined
   }
 
-  const match = /^(\s*)\/\/([ \t]*)(\^+)\?([ \t]*(.*))?$/.exec(line)
-  if (!match) {
+  const query = /^(\s*)\/\/([ \t]*)(\^+)([?|])([ \t]*(.*))?$/.exec(line)
+  if (query) {
+    const leadingIndent = query[1] ?? ''
+    const spaces = query[2] ?? ''
+    const carets = query[3] ?? ''
+    const operator = query[4]
+    const label = query[6]?.trim()
+
+    return {
+      line: previousOutputLineCount,
+      column: leadingIndent.length + spaces.length + 1,
+      length: carets.length,
+      kind: operator === '|' ? 'completion' : 'hover',
+      ...(label ? { label } : {}),
+    }
+  }
+
+  const highlight = /^(\s*)\/\/([ \t]*)(\^+)([ \t]*(.*))?$/.exec(line)
+  if (!highlight) {
     return undefined
   }
 
-  const leadingIndent = match[1] ?? ''
-  const spaces = match[2] ?? ''
-  const carets = match[3] ?? ''
-  const label = match[5]?.trim()
+  const leadingIndent = highlight[1] ?? ''
+  const spaces = highlight[2] ?? ''
+  const carets = highlight[3] ?? ''
+  const label = highlight[5]?.trim()
 
   return {
     line: previousOutputLineCount,
     column: leadingIndent.length + spaces.length + 1,
     length: carets.length,
-    kind: 'hover',
+    kind: 'highlight',
     ...(label ? { label } : {}),
   }
 }

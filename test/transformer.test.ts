@@ -40,6 +40,59 @@ describe('transformerTinymist', () => {
     expect(html).toMatch(/tinymist-hover[\s\S]*answer[\s\S]*<\/span>/)
   })
 
+  it('renders completion results from ^| markers', async () => {
+    const code = `#ans
+// ^|`
+
+    const transformer = await createTinymistTransformer(code, {
+      provider: {
+        query: () => ({
+          hovers: [],
+          completions: [
+            {
+              markerId: 'm1',
+              items: [
+                {
+                  label: 'answer',
+                  kind: 'variable',
+                  detail: 'int',
+                },
+              ],
+            },
+          ],
+        }),
+      },
+    })
+
+    const html = await codeToHtml(code, {
+      lang: 'typst',
+      theme: 'vitesse-dark',
+      transformers: [transformer],
+    })
+
+    expect(html).toContain('tinymist-completion-line')
+    expect(html).toContain('tinymist-completion-item')
+    expect(html).toContain('answer')
+    expect(html).toContain('int')
+    expect(html).not.toContain('// ^|')
+  })
+
+  it('renders static highlighted ranges from bare carets', async () => {
+    const code = `#answer
+// ^^^^^^`
+
+    const transformer = await createTinymistTransformer(code)
+
+    const html = await codeToHtml(code, {
+      lang: 'typst',
+      theme: 'vitesse-dark',
+      transformers: [transformer],
+    })
+
+    expect(html).toContain('tinymist-highlighted')
+    expect(html).not.toContain('// ^^^^^^')
+  })
+
   it('renders diagnostics as token decoration and an inserted line', async () => {
     const html = await codeToHtml('#bad', {
       lang: 'typst',

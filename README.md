@@ -61,14 +61,30 @@ initTinymistFloating()
 
 ## Marker Syntax
 
-Use a Typst line comment with one or more carets followed by `?`:
+Use a Typst line comment under the target code.
+
+Hover query:
 
 ```typst
 #let answer = 42
 //   ^?
 ```
 
-The marker line is removed before Shiki highlights the code.
+Completion query:
+
+```typst
+#ans
+//    ^|
+```
+
+Static highlight:
+
+```typst
+#answer
+// ^^^^^^
+```
+
+Marker lines are removed before Shiki highlights the code.
 
 ## Development
 

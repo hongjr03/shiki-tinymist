@@ -5,7 +5,7 @@ export interface TinymistMarker {
   line: number
   column: number
   length: number
-  kind: 'hover'
+  kind: 'hover' | 'completion' | 'highlight'
   label?: string
 }
 
@@ -31,6 +31,22 @@ export interface TinymistDiagnostic {
   severity?: 'error' | 'warning' | 'information' | 'hint'
 }
 
+export interface TinymistCompletion {
+  markerId: string
+  items: TinymistCompletionItem[]
+  line?: number
+  column?: number
+}
+
+export interface TinymistCompletionItem {
+  label: string
+  kind?: string
+  detail?: string
+  documentation?: string
+  deprecated?: boolean
+  insertText?: string
+}
+
 export interface TinymistQueryInput {
   code: string
   uri: string
@@ -39,10 +55,15 @@ export interface TinymistQueryInput {
 
 export interface TinymistQueryResult {
   hovers: TinymistHover[]
+  completions?: TinymistCompletion[]
   diagnostics?: TinymistDiagnostic[]
 }
 
-export type TinymistNode = TinymistHoverNode | TinymistDiagnosticNode
+export type TinymistNode =
+  | TinymistHoverNode
+  | TinymistCompletionNode
+  | TinymistDiagnosticNode
+  | TinymistHighlightNode
 
 export interface TinymistBaseNode {
   start: number
@@ -58,10 +79,20 @@ export interface TinymistHoverNode extends TinymistBaseNode {
   plainText?: string
 }
 
+export interface TinymistCompletionNode extends TinymistBaseNode {
+  type: 'completion'
+  markerId: string
+  items: TinymistCompletionItem[]
+}
+
 export interface TinymistDiagnosticNode extends TinymistBaseNode {
   type: 'diagnostic'
   message: string
   severity?: TinymistDiagnostic['severity']
+}
+
+export interface TinymistHighlightNode extends TinymistBaseNode {
+  type: 'highlight'
 }
 
 export interface TinymistShikiReturn {
@@ -125,7 +156,9 @@ export interface TinymistWasmProviderOptions {
   init?: 'async' | 'sync' | false
   rootUri?: string | null
   initializationOptions?: Record<string, unknown>
-  configuration?: Record<string, unknown> | ((section: string | undefined) => unknown)
+  configuration?:
+    | Record<string, unknown>
+    | ((section: string | undefined) => unknown)
   capabilities?: Record<string, unknown>
   resolvePackage?: (spec: TinymistPackageSpec) => string | undefined
 }
@@ -140,12 +173,16 @@ export type TinymistRenderer = (context: TinymistRendererContext) => HastNode[]
 export interface TinymistRichRendererOptions {
   classExtra?: string
   lang?: string
+  completionLimit?: number
   renderMarkdown?: (markdown: string) => HastNode[]
   hast?: {
     hoverToken?: HastExtension
     hoverPopup?: HastExtension
     popupCode?: HastExtension
     popupDocs?: HastExtension
+    completionLine?: HastExtension
+    completionItem?: HastExtension
+    highlightToken?: HastExtension
     diagnosticToken?: HastExtension
     diagnosticLine?: HastExtension
   }
@@ -160,6 +197,11 @@ export interface HastExtension {
 
 export interface TinymistRendererHooks {
   nodeHover: (info: TinymistHoverNode, node: HastNode) => Partial<HastNode>
+  lineCompletion?: (completion: TinymistCompletionNode) => HastNode[]
+  nodesHighlight?: (
+    highlight: TinymistHighlightNode,
+    nodes: HastNode[],
+  ) => HastNode[]
   nodesDiagnostic?: (
     diagnostic: TinymistDiagnosticNode,
     nodes: HastNode[],
@@ -173,18 +215,29 @@ export interface TransformerTinymistOptions {
   trigger?: RegExp
   disableTriggers?: (string | RegExp)[]
   langAlias?: Record<string, string>
-  filter?: (lang: string, code: string, options: unknown, context?: unknown) => boolean
+  filter?: (
+    lang: string,
+    code: string,
+    options: unknown,
+    context?: unknown,
+  ) => boolean
   renderer?: TinymistRendererHooks
   documentUri?: string | ((code: string) => string)
   result?: TinymistShikiReturn
   queryResult?: TinymistQueryResult
   throws?: boolean
-  onTinymistError?: (error: unknown, code: string, lang: string) => string | void
+  onTinymistError?: (
+    error: unknown,
+    code: string,
+    lang: string,
+  ) => string | void
   onShikiError?: (error: unknown, code: string, lang: string) => void
 }
 
-export interface CreateTinymistTransformerOptions
-  extends Omit<TransformerTinymistOptions, 'queryResult'> {
+export interface CreateTinymistTransformerOptions extends Omit<
+  TransformerTinymistOptions,
+  'queryResult'
+> {
   provider?: TinymistProvider
 }
 

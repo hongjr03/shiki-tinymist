@@ -25,7 +25,13 @@ const code = `#let answer = 42
 
 #let greet(name) = [Hello, #name]
 #greet("Typst")
-// ^?`
+// ^?
+
+#ans
+//    ^|
+
+#answer
+// ^^^^^^`
 
 const tinymist = await import(pathToFileURL(join(tinymistPkg, 'tinymist.js')))
 const wasm = await readFile(join(tinymistPkg, 'tinymist_bg.wasm'))

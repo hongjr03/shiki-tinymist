@@ -2,6 +2,7 @@ import type {
   HastElement,
   HastExtension,
   HastNode,
+  TinymistCompletionItem,
   TinymistDiagnosticNode,
   TinymistHoverNode,
   TinymistRendererHooks,
@@ -16,6 +17,7 @@ export function rendererRich(
   const {
     classExtra = '',
     lang,
+    completionLimit = 5,
     renderMarkdown = renderMarkdownPassThrough,
     hast,
   } = options
@@ -56,6 +58,51 @@ export function rendererRich(
           node,
         ]),
       )
+    },
+
+    lineCompletion(completion) {
+      const items = completion.items.slice(0, completionLimit)
+      if (!items.length) {
+        return []
+      }
+
+      return [
+        extend(
+          hast?.completionLine,
+          element(
+            'div',
+            {
+              class: [
+                'tinymist-meta-line',
+                'tinymist-completion-line',
+                classExtra,
+              ]
+                .filter(Boolean)
+                .join(' '),
+            },
+            items.map((item) =>
+              renderCompletionItem(item, classExtra, hast?.completionItem),
+            ),
+          ),
+        ),
+      ]
+    },
+
+    nodesHighlight(_highlight, nodes) {
+      return [
+        extend(
+          hast?.highlightToken,
+          element(
+            'span',
+            {
+              class: ['tinymist-highlighted', classExtra]
+                .filter(Boolean)
+                .join(' '),
+            },
+            nodes,
+          ),
+        ),
+      ]
     },
 
     nodesDiagnostic(diagnostic, nodes) {
@@ -100,6 +147,50 @@ export function rendererRich(
       ]
     },
   }
+}
+
+function renderCompletionItem(
+  item: TinymistCompletionItem,
+  classExtra: string,
+  extension: HastExtension | undefined,
+): HastElement {
+  const children: HastNode[] = []
+
+  if (item.kind) {
+    children.push(
+      element('span', { class: 'tinymist-completion-kind' }, [text(item.kind)]),
+    )
+  }
+
+  children.push(
+    element('span', { class: 'tinymist-completion-label' }, [text(item.label)]),
+  )
+
+  if (item.detail) {
+    children.push(
+      element('span', { class: 'tinymist-completion-detail' }, [
+        text(item.detail),
+      ]),
+    )
+  }
+
+  return extend(
+    extension,
+    element(
+      'span',
+      {
+        class: [
+          'tinymist-completion-item',
+          item.deprecated ? 'tinymist-completion-deprecated' : '',
+          classExtra,
+        ]
+          .filter(Boolean)
+          .join(' '),
+        ...(item.documentation ? { title: item.documentation } : {}),
+      },
+      children,
+    ),
+  )
 }
 
 interface RenderHoverContentOptions {

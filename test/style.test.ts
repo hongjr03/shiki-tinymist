@@ -7,6 +7,8 @@ const hoverRuleRE =
   /\.tinymist \.tinymist-hover:hover \.tinymist-popup-container,[\s\S]*?\.tinymist \.tinymist-hover:focus-within \.tinymist-popup-container \{[\s\S]*?display: inline-flex;[\s\S]*?\}/
 const floatingRuleRE =
   /\.tinymist-floating-root \.tinymist-popup-container \{[\s\S]*?position: fixed;[\s\S]*?\}/
+const completionRuleRE = /\.tinymist \.tinymist-completion-line \{/
+const highlightRuleRE = /\.tinymist \.tinymist-highlighted \{/
 
 describe('tinymist popup styles', () => {
   it.each(['style.css', 'style-rich.css'])(
@@ -17,6 +19,8 @@ describe('tinymist popup styles', () => {
       expect(css).toMatch(popupRuleRE)
       expect(css).toMatch(hoverRuleRE)
       expect(css).toMatch(floatingRuleRE)
+      expect(css).toMatch(completionRuleRE)
+      expect(css).toMatch(highlightRuleRE)
     },
   )
 })

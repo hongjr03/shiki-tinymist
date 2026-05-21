@@ -21,7 +21,35 @@ describe('parseTinymistCode', () => {
     ])
   })
 
-  it('does not parse non-hover comments as markers', () => {
+  it('parses completion and highlight markers', () => {
+    const parsed = parseTinymistCode(`#let answer = 42
+#ans
+// ^|
+#answer
+// ^^^^^^`)
+
+    expect(parsed.code).toBe(`#let answer = 42
+#ans
+#answer`)
+    expect(parsed.markers).toEqual([
+      {
+        id: 'm1',
+        line: 2,
+        column: 2,
+        length: 1,
+        kind: 'completion',
+      },
+      {
+        id: 'm2',
+        line: 3,
+        column: 2,
+        length: 6,
+        kind: 'highlight',
+      },
+    ])
+  })
+
+  it('does not parse ordinary comments as markers', () => {
     const parsed = parseTinymistCode(`#let answer = 42
 // just a comment`)
 

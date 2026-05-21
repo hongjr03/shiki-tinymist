@@ -132,6 +132,56 @@
   border-top: 1px solid var(--tinymist-border-color);
 }
 
+/* ===== Completions and Highlights ===== */
+.tinymist .tinymist-completion-line {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  padding: 6px 0;
+  min-width: 100%;
+  width: max-content;
+}
+
+.tinymist .tinymist-completion-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid var(--tinymist-border-color);
+  border-radius: 4px;
+  padding: 2px 7px;
+  background: var(--tinymist-popup-bg);
+  color: var(--tinymist-popup-color);
+  box-shadow: var(--tinymist-popup-shadow);
+}
+
+.tinymist .tinymist-completion-kind {
+  color: var(--tinymist-docs-color);
+  font-family: var(--tinymist-docs-font);
+  font-size: 0.72em;
+}
+
+.tinymist .tinymist-completion-label {
+  font-weight: 600;
+}
+
+.tinymist .tinymist-completion-detail {
+  color: var(--tinymist-docs-color);
+  font-size: 0.86em;
+}
+
+.tinymist .tinymist-completion-deprecated {
+  opacity: 0.65;
+  text-decoration: line-through;
+}
+
+.tinymist .tinymist-highlighted {
+  background: var(--tinymist-info-bg);
+  outline: 1px solid var(--tinymist-info-color);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
 /* ===== Diagnostics ===== */
 .tinymist .tinymist-diagnostic-line {
   position: relative;
@@ -264,7 +314,10 @@
 <span class="line"><span style="color:#DBD7CAEE">  name: str,</span></span>
 <span class="line"><span style="color:#DBD7CAEE">) = str;</span></span></code><div class="tinymist-popup-docs"># Positional Parameters
 
-## name</div><code class="tinymist-popup-code"><span style="color:#DBD7CAEE">type: str</span></code></span><span><span style="color:#80A665">greet</span></span></span><span style="color:#666666">(</span><span style="color:#C98A7D77">"</span><span style="color:#C98A7D">Typst</span><span style="color:#C98A7D77">"</span><span style="color:#666666">)</span></span></code></pre>
+## name</div><code class="tinymist-popup-code"><span style="color:#DBD7CAEE">type: str</span></code></span><span><span style="color:#80A665">greet</span></span></span><span style="color:#666666">(</span><span style="color:#C98A7D77">"</span><span style="color:#C98A7D">Typst</span><span style="color:#C98A7D77">"</span><span style="color:#666666">)</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#666666">#</span><span style="color:#80A665">ans</span></span><div class="tinymist-meta-line tinymist-completion-line"><span class="tinymist-completion-item"><span class="tinymist-completion-kind">variable</span><span class="tinymist-completion-label">answer</span><span class="tinymist-completion-detail">42</span></span><span class="tinymist-completion-item"><span class="tinymist-completion-kind">function</span><span class="tinymist-completion-label">arguments</span><span class="tinymist-completion-detail">type</span></span></div><span class="line"></span>
+<span class="line"><span style="color:#666666">#</span><span class="tinymist-highlighted"><span style="color:#80A665">answer</span></span></span></code></pre>
       </div>
     </main>
     <script>
