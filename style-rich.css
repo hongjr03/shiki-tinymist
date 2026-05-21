@@ -1,14 +1,21 @@
 /* ===== Basic ===== */
 :root {
-  --tinymist-border-color: #8888;
+  --tinymist-border-color: #6b728080;
   --tinymist-underline-color: currentColor;
-  --tinymist-popup-bg: #f8f8f8;
-  --tinymist-popup-color: inherit;
-  --tinymist-popup-shadow: rgba(0, 0, 0, 0.08) 0px 1px 4px;
-  --tinymist-docs-color: #666;
+  --tinymist-highlighted-border: #c37d0d50;
+  --tinymist-highlighted-bg: #c37d0d20;
+  --tinymist-popup-bg: #1e1e1e;
+  --tinymist-popup-color: #d4d4d4;
+  --tinymist-popup-shadow: rgba(0, 0, 0, 0.28) 0px 8px 24px;
+  --tinymist-docs-color: #a8a8a8;
   --tinymist-docs-font: sans-serif;
   --tinymist-code-font: inherit;
   --tinymist-code-font-size: 1em;
+  --tinymist-muted-color: #8b949e;
+  --tinymist-completion-bg: var(--tinymist-popup-bg);
+  --tinymist-completion-color: var(--tinymist-popup-color);
+  --tinymist-completion-kind-color: var(--tinymist-muted-color);
+  --tinymist-completion-detail-color: var(--tinymist-muted-color);
   --tinymist-error-color: #d45656;
   --tinymist-error-bg: #d4565620;
   --tinymist-warn-color: #c37d0d;
@@ -101,7 +108,7 @@
 }
 
 .tinymist-floating-root
-  .tinymist-popup-container[data-tinymist-placement='top']
+  .tinymist-popup-container[data-tinymist-placement="top"]
   .tinymist-popup-arrow {
   top: auto;
   bottom: -4px;
@@ -114,8 +121,10 @@
 }
 
 .tinymist .tinymist-popup-code {
+  display: block;
   font-family: var(--tinymist-code-font);
   font-size: var(--tinymist-code-font-size);
+  color: var(--tinymist-popup-color);
 }
 
 .tinymist .tinymist-popup-docs {
@@ -143,13 +152,14 @@
   border: 1px solid var(--tinymist-border-color);
   border-radius: 4px;
   padding: 2px 7px;
-  background: var(--tinymist-popup-bg);
-  color: var(--tinymist-popup-color);
+  background: var(--tinymist-completion-bg);
+  color: var(--tinymist-completion-color);
+  font-family: var(--tinymist-code-font);
   box-shadow: var(--tinymist-popup-shadow);
 }
 
 .tinymist .tinymist-completion-kind {
-  color: var(--tinymist-docs-color);
+  color: var(--tinymist-completion-kind-color);
   font-family: var(--tinymist-docs-font);
   font-size: 0.72em;
 }
@@ -159,7 +169,7 @@
 }
 
 .tinymist .tinymist-completion-detail {
-  color: var(--tinymist-docs-color);
+  color: var(--tinymist-completion-detail-color);
   font-size: 0.86em;
 }
 
@@ -169,10 +179,11 @@
 }
 
 .tinymist .tinymist-highlighted {
-  background: var(--tinymist-info-bg);
-  outline: 1px solid var(--tinymist-info-color);
-  outline-offset: 2px;
-  border-radius: 2px;
+  background-color: var(--tinymist-highlighted-bg);
+  border: 1px solid var(--tinymist-highlighted-border);
+  padding: 1px 2px;
+  margin: -1px -3px;
+  border-radius: 4px;
 }
 
 /* ===== Diagnostics ===== */

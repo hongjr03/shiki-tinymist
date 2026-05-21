@@ -136,12 +136,6 @@ function renderPage({ highlighted, tinymistCss, tinymistClient }) {
           monospace;
       }
 
-      .tinymist .tinymist-popup-container {
-        --tinymist-popup-bg: #f6f1e8;
-        --tinymist-popup-color: #1a1a1a;
-        --tinymist-border-color: #d8cfbe;
-      }
-
       .tinymist .tinymist-popup-code,
       .tinymist .tinymist-popup-docs {
         font-family:

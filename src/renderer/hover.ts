@@ -7,7 +7,10 @@ const fenceRE = /```([^\n`]*)\n([\s\S]*?)```/g
 
 export interface HoverHighlightContext {
   options?: Record<string, unknown>
-  codeToHast?: (code: string, options: Record<string, unknown>) => {
+  codeToHast?: (
+    code: string,
+    options: Record<string, unknown>,
+  ) => {
     children?: unknown
   }
 }
@@ -114,24 +117,36 @@ function renderCode(
     fenceLang || options.lang || getContextLang(context) || 'typst',
   )
   const highlighted = highlightCode(context, code, popupLang)
+  const properties: Record<string, unknown> = {
+    class: 'tinymist-popup-code',
+  }
+
+  if (highlighted.style) {
+    properties.style = highlighted.style
+  }
 
   return extendHastElement(
     options.hast?.popupCode,
-    element('code', { class: 'tinymist-popup-code' }, highlighted),
+    element('code', properties, highlighted.children),
   )
+}
+
+interface HighlightedCode {
+  children: HastNode[]
+  style?: string
 }
 
 function highlightCode(
   context: HoverHighlightContext,
   code: string,
   lang: string,
-): HastNode[] {
+): HighlightedCode {
   if (!code) {
-    return []
+    return { children: [] }
   }
 
   if (typeof context.codeToHast !== 'function') {
-    return [text(code)]
+    return { children: [text(code)] }
   }
 
   try {
@@ -144,11 +159,11 @@ function highlightCode(
     })
     return unwrapHighlightedRoot(toHastChildren(root.children))
   } catch {
-    return [text(code)]
+    return { children: [text(code)] }
   }
 }
 
-function unwrapHighlightedRoot(children: HastNode[]): HastNode[] {
+function unwrapHighlightedRoot(children: HastNode[]): HighlightedCode {
   const pre = children[0]
   if (
     children.length === 1 &&
@@ -158,14 +173,22 @@ function unwrapHighlightedRoot(children: HastNode[]): HastNode[] {
     const code = pre.children?.find((child) => {
       return child.type === 'element' && child.tagName === 'code'
     }) as HastElement | undefined
-    return code?.children ?? children
+    return {
+      children: code?.children ?? children,
+      style: getElementStyle(code) ?? getElementStyle(pre),
+    }
   }
 
-  return children
+  return { children }
 }
 
 function toHastChildren(value: unknown): HastNode[] {
   return Array.isArray(value) ? (value as HastNode[]) : []
+}
+
+function getElementStyle(element: HastElement | undefined): string | undefined {
+  const style = element?.properties?.style
+  return typeof style === 'string' ? style : undefined
 }
 
 function normalizePopupLang(lang: string): string {
