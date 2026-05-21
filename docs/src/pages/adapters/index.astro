@@ -2,11 +2,15 @@
 import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro'
 import AnchorHeading from '@astrojs/starlight/components/AnchorHeading.astro'
 import { adapters } from '../../data/adapters.mjs'
+import { docsLink } from '../../data/links.mjs'
 
 const headings = [
   { depth: 2, slug: 'adapter-routes', text: 'Adapter routes' },
   { depth: 2, slug: 'maintenance-model', text: 'Maintenance model' },
 ]
+
+const adapterHref = (adapter) =>
+  docsLink(`/adapters/${adapter.id}/`, import.meta.env.BASE_URL)
 ---
 
 <StarlightPage
@@ -27,7 +31,7 @@ const headings = [
   <div class="adapter-grid">
     {
       adapters.map((adapter) => (
-        <a class="adapter-card" href={`${adapter.id}/`}>
+        <a class="adapter-card" href={adapterHref(adapter)}>
           <span>{adapter.name}</span>
           <code>{adapter.entry}</code>
           <p>{adapter.summary}</p>
