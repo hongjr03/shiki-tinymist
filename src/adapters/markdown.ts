@@ -1,14 +1,6 @@
 import { tinymistFloatingClientScript } from './html.js'
 import { renderTinymistCode, type TinymistRenderOptions } from './render.js'
-
-const defaultTrigger = /\b(?:tinymist|typst-lsp)\b/
-const defaultLangs = ['typ', 'typst']
-const defaultDisableTriggers = [
-  'notinymist',
-  'no-tinymist',
-  'notypst-lsp',
-  'no-typst-lsp',
-]
+import { shouldActivateTinymist } from '../activation.js'
 
 export interface TinymistMarkdownOptions extends TinymistRenderOptions {
   includeClientScript?: boolean
@@ -72,20 +64,13 @@ export function shouldRenderTinymistFence(
   info: TinymistFenceInfo,
   options: TinymistMarkdownOptions = {},
 ): boolean {
-  const lang = info.lang.toLowerCase()
-  const langs = options.langs ?? defaultLangs
-  const enabledByLang = langs.includes(lang)
-  const trigger = options.trigger ?? defaultTrigger
-  const enabledByTrigger = !options.explicitTrigger || trigger.test(info.meta)
-  const disabled = (options.disableTriggers ?? defaultDisableTriggers).some(
-    (item) => {
-      return typeof item === 'string'
-        ? info.meta.includes(item)
-        : item.test(info.meta)
+  return shouldActivateTinymist(
+    {
+      lang: info.lang,
+      meta: info.meta,
     },
+    options,
   )
-
-  return enabledByLang && enabledByTrigger && !disabled
 }
 
 export function parseFenceInfo(info: string): TinymistFenceInfo {
