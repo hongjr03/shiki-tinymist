@@ -189,11 +189,13 @@ function renderPage({ adapters, style, client }) {
 
       html {
         scroll-behavior: smooth;
+        overflow-x: hidden;
       }
 
       body {
         margin: 0;
         min-height: 100vh;
+        overflow-x: hidden;
       }
 
       a {
@@ -201,7 +203,7 @@ function renderPage({ adapters, style, client }) {
       }
 
       .shell {
-        width: min(1180px, calc(100% - 32px));
+        width: min(1180px, calc(100% - 40px));
         margin: 0 auto;
       }
 
@@ -226,6 +228,7 @@ function renderPage({ adapters, style, client }) {
         font-size: 76px;
         line-height: 0.92;
         font-weight: 700;
+        overflow-wrap: anywhere;
       }
 
       .lead {
@@ -241,6 +244,7 @@ function renderPage({ adapters, style, client }) {
         flex-wrap: wrap;
         gap: 8px;
         margin-top: 30px;
+        max-width: 860px;
       }
 
       nav a {
@@ -253,6 +257,9 @@ function renderPage({ adapters, style, client }) {
         font:
           700 13px/1 ui-monospace, SFMono-Regular, Consolas,
           "Liberation Mono", monospace;
+        min-height: 36px;
+        display: inline-flex;
+        align-items: center;
       }
 
       main {
@@ -265,6 +272,7 @@ function renderPage({ adapters, style, client }) {
         gap: 26px;
         padding: 42px 0;
         border-bottom: 1px solid var(--line);
+        min-width: 0;
       }
 
       .adapter h2 {
@@ -281,11 +289,13 @@ function renderPage({ adapters, style, client }) {
 
       .entry {
         display: inline-block;
+        max-width: 100%;
         margin-top: 14px;
         color: var(--accent);
         font:
           700 13px/1.35 ui-monospace, SFMono-Regular, Consolas,
           "Liberation Mono", monospace;
+        overflow-wrap: anywhere;
       }
 
       .summary {
@@ -296,10 +306,14 @@ function renderPage({ adapters, style, client }) {
       }
 
       .preview {
+        width: 100%;
+        max-width: 100%;
         border: 1px solid var(--line);
         border-radius: 8px;
         overflow: auto;
         background: var(--code);
+        -webkit-overflow-scrolling: touch;
+        overscroll-behavior-x: contain;
       }
 
       .preview h1 {
@@ -314,6 +328,7 @@ function renderPage({ adapters, style, client }) {
         padding: 20px;
         font-size: 14px;
         line-height: 1.72;
+        min-width: max-content;
       }
 
       .tinymist .tinymist-popup-container {
@@ -327,6 +342,7 @@ function renderPage({ adapters, style, client }) {
         border: 1px solid var(--line);
         border-radius: 8px;
         background: var(--panel);
+        overflow: hidden;
       }
 
       summary {
@@ -336,6 +352,9 @@ function renderPage({ adapters, style, client }) {
         font:
           700 13px/1.2 ui-monospace, SFMono-Regular, Consolas,
           "Liberation Mono", monospace;
+        min-height: 42px;
+        display: flex;
+        align-items: center;
       }
 
       .source-file {
@@ -348,6 +367,7 @@ function renderPage({ adapters, style, client }) {
         font:
           700 12px/1.2 ui-monospace, SFMono-Regular, Consolas,
           "Liberation Mono", monospace;
+        overflow-wrap: anywhere;
       }
 
       pre.source {
@@ -360,6 +380,8 @@ function renderPage({ adapters, style, client }) {
         font:
           12px/1.65 ui-monospace, SFMono-Regular, Consolas,
           "Liberation Mono", monospace;
+        -webkit-overflow-scrolling: touch;
+        overscroll-behavior-x: contain;
       }
 
       footer {
@@ -368,21 +390,127 @@ function renderPage({ adapters, style, client }) {
         font-size: 14px;
       }
 
+      @media (max-width: 1020px) {
+        .adapter {
+          grid-template-columns: minmax(220px, 0.72fr) minmax(0, 1.28fr);
+          gap: 20px;
+        }
+      }
+
       @media (max-width: 860px) {
+        .shell {
+          width: min(100% - 28px, 720px);
+        }
+
         header {
-          padding-top: 42px;
+          padding: 42px 0 28px;
         }
 
         h1 {
           font-size: 46px;
+          line-height: 1;
+        }
+
+        .lead {
+          font-size: 16px;
+          line-height: 1.58;
+        }
+
+        nav {
+          display: grid;
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          gap: 8px;
+        }
+
+        nav a {
+          justify-content: center;
+          text-align: center;
         }
 
         .adapter {
           grid-template-columns: 1fr;
+          gap: 18px;
+          padding: 34px 0;
         }
 
         .adapter-meta {
           position: static;
+        }
+
+        .preview .shiki {
+          padding: 16px;
+          font-size: 13px;
+          line-height: 1.68;
+        }
+
+        pre.source {
+          font-size: 11px;
+          line-height: 1.58;
+        }
+      }
+
+      @media (max-width: 520px) {
+        .shell {
+          width: min(100% - 20px, 480px);
+        }
+
+        header {
+          padding-top: 30px;
+        }
+
+        h1 {
+          font-size: 34px;
+        }
+
+        .lead {
+          margin-top: 16px;
+          font-size: 15px;
+        }
+
+        nav {
+          grid-template-columns: 1fr;
+          margin-top: 22px;
+        }
+
+        nav a {
+          min-height: 40px;
+        }
+
+        main {
+          padding-top: 10px;
+        }
+
+        .adapter {
+          padding: 28px 0;
+        }
+
+        .adapter h2 {
+          font-size: 28px;
+        }
+
+        .summary {
+          font-size: 15px;
+        }
+
+        .preview h1 {
+          padding: 14px 14px 0;
+          font-size: 18px;
+        }
+
+        .preview .shiki {
+          padding: 14px;
+        }
+
+        summary {
+          padding: 12px;
+        }
+
+        .source-title {
+          padding: 10px 12px;
+        }
+
+        pre.source {
+          padding: 12px;
         }
       }
     </style>
