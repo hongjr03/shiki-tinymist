@@ -1,17 +1,19 @@
 import type { ShikiTransformer } from 'shiki'
 import { splitTokens } from '@shikijs/core'
-import { parseTinymistCode } from './parser.js'
+import { lineKey, parseTinymistCode } from './parser.js'
 import { rendererRich } from './renderer.js'
 import type {
   CreateTinymistTransformerOptions,
   HastElement,
   HastNode,
   ParsedTinymistCode,
+  TinymistDiagnostic,
   TinymistHover,
   TinymistNode,
   TinymistProvider,
   TinymistQueryResult,
   TinymistShikiReturn,
+  TinymistVirtualFile,
   TransformerTinymistOptions,
 } from './types.js'
 import { createTinymistWasmProvider } from './wasm.js'
@@ -40,12 +42,21 @@ export async function prepareTinymistCode(
   const queryMarkers = parsed.markers.filter(
     (marker) => marker.kind !== 'highlight',
   )
+  const queryFiles = resolveQueryFiles(
+    parsed.files,
+    options.documentUri,
+    parsed.code,
+  )
+  const activeFile = findActiveFile(queryFiles, queryMarkers)
   const queryResult =
     queryMarkers.length > 0
       ? await provider.query({
-          code: parsed.code,
-          uri: resolveDocumentUri(options.documentUri, parsed.code),
+          code: activeFile.code,
+          uri:
+            activeFile.uri ??
+            resolveDocumentUri(options.documentUri, parsed.code),
           markers: queryMarkers,
+          files: queryFiles,
         })
       : { hovers: [] }
 
@@ -414,7 +425,13 @@ function createTinymistReturn(
         continue
       }
 
-      const line = (completion.line ?? marker.line) - 1
+      const line =
+        resolveOutputLine(
+          parsed,
+          completion.fileName ?? marker.fileName,
+          completion.line ?? marker.queryLine,
+          marker.line,
+        ) - 1
       const character = (completion.column ?? marker.column) - 1
       nodes.push({
         type: 'completion',
@@ -435,7 +452,13 @@ function createTinymistReturn(
       continue
     }
 
-    const line = (hover?.line ?? marker.line) - 1
+    const line =
+      resolveOutputLine(
+        parsed,
+        hover?.fileName ?? marker.fileName,
+        hover?.line ?? marker.queryLine,
+        marker.line,
+      ) - 1
     const character = (hover?.column ?? marker.column) - 1
     const length = hover?.length ?? marker.length
     nodes.push({
@@ -450,8 +473,16 @@ function createTinymistReturn(
     })
   }
 
-  for (const diagnostic of queryResult?.diagnostics ?? []) {
-    const line = diagnostic.line - 1
+  for (const diagnostic of filterDiagnostics(
+    parsed,
+    queryResult?.diagnostics ?? [],
+  )) {
+    const outputLine = resolveDiagnosticOutputLine(parsed, diagnostic)
+    if (!outputLine) {
+      continue
+    }
+
+    const line = outputLine - 1
     const character = diagnostic.column - 1
     nodes.push({
       type: 'diagnostic',
@@ -473,6 +504,114 @@ function createTinymistReturn(
   }
 }
 
+function resolveQueryFiles(
+  files: TinymistVirtualFile[],
+  documentUri: TransformerTinymistOptions['documentUri'],
+  code: string,
+): TinymistVirtualFile[] {
+  const baseUri = resolveDocumentUri(documentUri, code)
+  if (files.length <= 1) {
+    return [
+      {
+        ...(files[0] ?? { fileName: 'index.typ', code }),
+        uri: baseUri,
+      },
+    ]
+  }
+
+  const rootUri = baseUri.replace(/\/?[^/]*$/, '/')
+  return files.map((file) => ({
+    ...file,
+    uri: `${rootUri}${encodeFilePath(file.fileName)}`,
+  }))
+}
+
+function findActiveFile(
+  files: TinymistVirtualFile[],
+  markers: Array<{ fileName?: string }>,
+): TinymistVirtualFile {
+  const markerFileName = markers.find((marker) => marker.fileName)?.fileName
+  if (markerFileName) {
+    const file = files.find((item) => item.fileName === markerFileName)
+    if (file) {
+      return file
+    }
+  }
+
+  return (
+    files.find((file) => file.code.trim()) ??
+    files[0] ?? {
+      fileName: 'index.typ',
+      code: '',
+    }
+  )
+}
+
+function resolveOutputLine(
+  parsed: ParsedTinymistCode,
+  fileName: string | undefined,
+  queryLine: number | undefined,
+  fallbackLine: number,
+): number {
+  if (fileName && queryLine) {
+    return (
+      parsed.queryLineToOutputLine[lineKey(fileName, queryLine)] ?? fallbackLine
+    )
+  }
+
+  return fallbackLine
+}
+
+function isOutputLineVisible(
+  parsed: ParsedTinymistCode,
+  line: number,
+): boolean {
+  return line >= 1 && line <= parsed.code.split('\n').length
+}
+
+function resolveDiagnosticOutputLine(
+  parsed: ParsedTinymistCode,
+  diagnostic: TinymistDiagnostic,
+): number | undefined {
+  const fileNames = diagnostic.fileName
+    ? [diagnostic.fileName]
+    : parsed.files.map((file) => file.fileName)
+
+  for (const fileName of fileNames) {
+    const outputLine =
+      parsed.queryLineToOutputLine[lineKey(fileName, diagnostic.line)]
+    if (outputLine && isOutputLineVisible(parsed, outputLine)) {
+      return outputLine
+    }
+  }
+
+  return undefined
+}
+
+function filterDiagnostics(
+  parsed: ParsedTinymistCode,
+  diagnostics: TinymistDiagnostic[],
+): TinymistDiagnostic[] {
+  if (parsed.diagnosticsMode === 'hide') {
+    return []
+  }
+
+  if (parsed.diagnosticsMode !== 'expect') {
+    return diagnostics
+  }
+
+  return diagnostics.filter((diagnostic) => {
+    const text = [diagnostic.code, diagnostic.message]
+      .filter(Boolean)
+      .join(' ')
+      .toLowerCase()
+
+    return parsed.expectedErrors.some((expected) => {
+      return text.includes(expected.toLowerCase())
+    })
+  })
+}
+
 function resolveDocumentUri(
   documentUri: TransformerTinymistOptions['documentUri'],
   code: string,
@@ -486,6 +625,13 @@ function resolveDocumentUri(
   }
 
   return `untitled://shiki-tinymist/${hashCode(code)}.typ`
+}
+
+function encodeFilePath(fileName: string): string {
+  return fileName
+    .split('/')
+    .map((segment) => encodeURIComponent(segment))
+    .join('/')
 }
 
 function getMeta(meta: unknown): string | undefined {

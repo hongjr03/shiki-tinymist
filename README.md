@@ -86,6 +86,25 @@ Static highlight:
 
 Marker lines are removed before Shiki highlights the code.
 
+## Twoslash Compatibility
+
+`shiki-tinymist` supports the Twoslash-style notation that maps cleanly to
+Typst/Tinymist:
+
+| Notation                                  | Status     | Behavior                                                                                   |
+| ----------------------------------------- | ---------- | ------------------------------------------------------------------------------------------ |
+| `// ^?`                                   | supported  | Queries Tinymist hover and renders it on the target range.                                 |
+| `// ^\|`                                  | supported  | Queries Tinymist completions and renders up to 5 inline items by default.                  |
+| `// ^^^`                                  | supported  | Highlights the target range without an LSP query.                                          |
+| `// ---cut---` / `// ---cut-before---`    | supported  | Hides previous lines from output while keeping them in the Tinymist query.                 |
+| `// ---cut-after---`                      | supported  | Hides following lines from output while keeping them in the Tinymist query.                |
+| `// ---cut-start---` / `// ---cut-end---` | supported  | Hides paired output ranges while keeping them in the Tinymist query.                       |
+| `// @filename: name.typ`                  | supported  | Splits the query into virtual files; the filename comment remains visible unless cut away. |
+| `// @noErrors`                            | supported  | Suppresses rendered diagnostics.                                                           |
+| `// @errors: text`                        | supported  | Renders diagnostics whose code or message includes one of the listed tokens.               |
+| `// @showEmit` / `// @showEmittedFile`    | recognized | Removed from output, but no Typst emit replacement is produced.                            |
+| Other `// @name` options                  | recognized | Removed from output and exposed in `ParsedTinymistCode.directives`.                        |
+
 ## Development
 
 Tinymist is tracked as a git submodule. Its WASM package is intentionally not

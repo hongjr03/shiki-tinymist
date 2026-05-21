@@ -19,7 +19,10 @@ const tinymistPkg = join(
   'pkg',
 )
 
-const code = `#let answer = 42
+const code = `// @noErrors
+#let hidden = 42
+// ---cut---
+#let answer = hidden
 #answer
 // ^?
 

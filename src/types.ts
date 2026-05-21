@@ -6,18 +6,39 @@ export interface TinymistMarker {
   column: number
   length: number
   kind: 'hover' | 'completion' | 'highlight'
+  fileName?: string
+  queryLine?: number
+  queryColumn?: number
   label?: string
 }
 
 export interface ParsedTinymistCode {
   code: string
   markers: TinymistMarker[]
+  files: TinymistVirtualFile[]
+  directives: TinymistDirective[]
+  diagnosticsMode: 'show' | 'hide' | 'expect'
+  expectedErrors: string[]
+  queryLineToOutputLine: Record<string, number>
+}
+
+export interface TinymistVirtualFile {
+  fileName: string
+  code: string
+  uri?: string
+}
+
+export interface TinymistDirective {
+  name: string
+  value?: string
+  line: number
 }
 
 export interface TinymistHover {
   markerId: string
   markdown: string
   plainText?: string
+  fileName?: string
   line?: number
   column?: number
   length?: number
@@ -29,11 +50,14 @@ export interface TinymistDiagnostic {
   length?: number
   message: string
   severity?: 'error' | 'warning' | 'information' | 'hint'
+  code?: string
+  fileName?: string
 }
 
 export interface TinymistCompletion {
   markerId: string
   items: TinymistCompletionItem[]
+  fileName?: string
   line?: number
   column?: number
 }
@@ -51,6 +75,7 @@ export interface TinymistQueryInput {
   code: string
   uri: string
   markers: TinymistMarker[]
+  files?: TinymistVirtualFile[]
 }
 
 export interface TinymistQueryResult {

@@ -119,4 +119,126 @@ describe('transformerTinymist', () => {
     expect(html).toContain('tinymist-diagnostic-line')
     expect(html).toContain('Expected an expression.')
   })
+
+  it('supports @noErrors and @errors diagnostic directives', async () => {
+    const hiddenDiagnostics = await codeToHtml(
+      `// @noErrors
+#bad`,
+      {
+        lang: 'typst',
+        theme: 'vitesse-dark',
+        transformers: [
+          transformerTinymist({
+            queryResult: {
+              hovers: [],
+              diagnostics: [
+                {
+                  line: 1,
+                  column: 1,
+                  message: 'Expected an expression.',
+                },
+              ],
+            },
+          }),
+        ],
+      },
+    )
+
+    expect(hiddenDiagnostics).not.toContain('tinymist-diagnostic-line')
+
+    const expectedDiagnostics = await codeToHtml(
+      `// @errors: expression
+#bad`,
+      {
+        lang: 'typst',
+        theme: 'vitesse-dark',
+        transformers: [
+          transformerTinymist({
+            queryResult: {
+              hovers: [],
+              diagnostics: [
+                {
+                  line: 1,
+                  column: 1,
+                  message: 'Expected an expression.',
+                },
+                {
+                  line: 1,
+                  column: 1,
+                  message: 'Unrelated warning.',
+                },
+              ],
+            },
+          }),
+        ],
+      },
+    )
+
+    expect(expectedDiagnostics).toContain('Expected an expression.')
+    expect(expectedDiagnostics).not.toContain('Unrelated warning.')
+  })
+
+  it('does not render diagnostics for cut-hidden lines', async () => {
+    const html = await codeToHtml(
+      `#hidden
+// ---cut---
+#shown`,
+      {
+        lang: 'typst',
+        theme: 'vitesse-dark',
+        transformers: [
+          transformerTinymist({
+            queryResult: {
+              hovers: [],
+              diagnostics: [
+                {
+                  line: 1,
+                  column: 1,
+                  message: 'Hidden diagnostic.',
+                },
+              ],
+            },
+          }),
+        ],
+      },
+    )
+
+    expect(html).not.toContain('Hidden diagnostic.')
+  })
+
+  it('passes cut-hidden code and filename sections to the provider', async () => {
+    let queryInput: unknown
+    const code = `// @filename: lib.typ
+#let hidden = 1
+// ---cut---
+#hidden
+// ^?`
+
+    await createTinymistTransformer(code, {
+      provider: {
+        query: (input) => {
+          queryInput = input
+          return { hovers: [] }
+        },
+      },
+    })
+
+    expect(queryInput).toMatchObject({
+      markers: [
+        {
+          fileName: 'lib.typ',
+          line: 1,
+          queryLine: 2,
+        },
+      ],
+      files: [
+        { fileName: 'index.typ', code: '' },
+        {
+          fileName: 'lib.typ',
+          code: `#let hidden = 1
+#hidden`,
+        },
+      ],
+    })
+  })
 })

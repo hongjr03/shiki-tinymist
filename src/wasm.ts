@@ -8,6 +8,7 @@ import type {
   TinymistProvider,
   TinymistQueryInput,
   TinymistQueryResult,
+  TinymistVirtualFile,
   TinymistWasmModule,
   TinymistWasmNotification,
   TinymistWasmProviderOptions,
@@ -33,6 +34,7 @@ class TinymistWasmSession {
   readonly #options: TinymistWasmProviderOptions
   readonly #events: number[] = []
   readonly #diagnostics = new Map<string, TinymistDiagnostic[]>()
+  readonly #uriToFileName = new Map<string, string>()
   readonly #server: TinymistLanguageServerInstance
 
   constructor(
@@ -68,6 +70,7 @@ class TinymistWasmSession {
   }
 
   async query(input: TinymistQueryInput): Promise<TinymistQueryResult> {
+    const files = normalizeQueryFiles(input)
     await this.#request('initialize', {
       processId: null,
       rootUri: this.#options.rootUri ?? rootUriFromDocumentUri(input.uri),
@@ -76,24 +79,27 @@ class TinymistWasmSession {
     })
 
     this.#notification('initialized', {})
-    this.#notification('textDocument/didOpen', {
-      textDocument: {
-        uri: input.uri,
-        languageId: 'typst',
-        version: 1,
-        text: input.code,
-      },
-    })
+    for (const file of files) {
+      this.#uriToFileName.set(file.uri, file.fileName)
+      this.#notification('textDocument/didOpen', {
+        textDocument: {
+          uri: file.uri,
+          languageId: 'typst',
+          version: 1,
+          text: file.code,
+        },
+      })
+    }
 
     const hovers = await Promise.all(
       input.markers
         .filter((marker) => marker.kind === 'hover')
         .map(async (marker): Promise<TinymistHover> => {
           const response = await this.#request('textDocument/hover', {
-            textDocument: { uri: input.uri },
+            textDocument: { uri: resolveMarkerUri(files, input.uri, marker) },
             position: {
-              line: marker.line - 1,
-              character: marker.column - 1,
+              line: (marker.queryLine ?? marker.line) - 1,
+              character: (marker.queryColumn ?? marker.column) - 1,
             },
           })
           const range = normalizeHoverRange(response)
@@ -101,6 +107,7 @@ class TinymistWasmSession {
           return {
             markerId: marker.id,
             markdown: stringifyHover(response),
+            ...(marker.fileName ? { fileName: marker.fileName } : {}),
             ...(range ?? {}),
           }
         }),
@@ -111,30 +118,33 @@ class TinymistWasmSession {
         .filter((marker) => marker.kind === 'completion')
         .map(async (marker): Promise<TinymistCompletion> => {
           const response = await this.#request('textDocument/completion', {
-            textDocument: { uri: input.uri },
+            textDocument: { uri: resolveMarkerUri(files, input.uri, marker) },
             position: {
-              line: marker.line - 1,
-              character: marker.column - 1,
+              line: (marker.queryLine ?? marker.line) - 1,
+              character: (marker.queryColumn ?? marker.column) - 1,
             },
           })
 
           return {
             markerId: marker.id,
-            line: marker.line,
-            column: marker.column,
+            ...(marker.fileName ? { fileName: marker.fileName } : {}),
+            line: marker.queryLine ?? marker.line,
+            column: marker.queryColumn ?? marker.column,
             items: normalizeCompletionItems(response),
           }
         }),
     )
 
-    this.#notification('textDocument/didClose', {
-      textDocument: { uri: input.uri },
-    })
+    for (const file of [...files].reverse()) {
+      this.#notification('textDocument/didClose', {
+        textDocument: { uri: file.uri },
+      })
+    }
 
     return {
       hovers,
       completions,
-      diagnostics: this.#diagnostics.get(input.uri) ?? [],
+      diagnostics: [...this.#diagnostics.values()].flat(),
     }
   }
 
@@ -214,9 +224,12 @@ class TinymistWasmSession {
       return
     }
 
+    const uri = params.uri
     this.#diagnostics.set(
-      params.uri,
-      params.diagnostics.map((diagnostic) => normalizeDiagnostic(diagnostic)),
+      uri,
+      params.diagnostics.map((diagnostic) =>
+        normalizeDiagnostic(diagnostic, this.#uriToFileName.get(uri)),
+      ),
     )
   }
 }
@@ -283,6 +296,35 @@ async function importTinymist(): Promise<TinymistWasmModule> {
       `Failed to import optional peer dependency tinymist: ${errorMessage(error)}`,
     )
   }
+}
+
+function normalizeQueryFiles(
+  input: TinymistQueryInput,
+): Required<TinymistVirtualFile>[] {
+  const files = input.files?.length
+    ? input.files
+    : [{ fileName: 'index.typ', code: input.code, uri: input.uri }]
+
+  return files.map((file) => ({
+    fileName: file.fileName,
+    code: file.code,
+    uri: file.uri ?? input.uri,
+  }))
+}
+
+function resolveMarkerUri(
+  files: Required<TinymistVirtualFile>[],
+  fallbackUri: string,
+  marker: { fileName?: string },
+): string {
+  if (marker.fileName) {
+    return (
+      files.find((file) => file.fileName === marker.fileName)?.uri ??
+      fallbackUri
+    )
+  }
+
+  return fallbackUri
 }
 
 function stringifyHover(response: unknown): string {
@@ -446,17 +488,38 @@ function stringifyMarkup(value: unknown): string {
   return ''
 }
 
-function normalizeDiagnostic(value: unknown): TinymistDiagnostic {
+function normalizeDiagnostic(
+  value: unknown,
+  fileName: string | undefined,
+): TinymistDiagnostic {
   const diagnostic = value as {
-    range?: { start?: { line?: number; character?: number } }
+    range?: {
+      start?: { line?: number; character?: number }
+      end?: { line?: number; character?: number }
+    }
     message?: string
     severity?: number
+    code?: number | string
   }
 
   const normalized: TinymistDiagnostic = {
     line: (diagnostic.range?.start?.line ?? 0) + 1,
     column: (diagnostic.range?.start?.character ?? 0) + 1,
+    length: Math.max(
+      1,
+      (diagnostic.range?.end?.character ?? 1) -
+        (diagnostic.range?.start?.character ?? 0),
+    ),
     message: diagnostic.message ?? '',
+  }
+  if (fileName) {
+    normalized.fileName = fileName
+  }
+  if (
+    typeof diagnostic.code === 'string' ||
+    typeof diagnostic.code === 'number'
+  ) {
+    normalized.code = String(diagnostic.code)
   }
   const severity = normalizeSeverity(diagnostic.severity)
   if (severity) {

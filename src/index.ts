@@ -15,6 +15,7 @@ export type {
   TinymistCompletion,
   TinymistCompletionItem,
   TinymistCompletionNode,
+  TinymistDirective,
   TinymistDiagnostic,
   TinymistDiagnosticNode,
   TinymistHighlightNode,
@@ -33,5 +34,6 @@ export type {
   TinymistShikiReturn,
   TinymistWasmModule,
   TinymistWasmProviderOptions,
+  TinymistVirtualFile,
   TransformerTinymistOptions,
 } from './types.js'
