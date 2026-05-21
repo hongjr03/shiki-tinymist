@@ -1,5 +1,7 @@
 node_modules
 dist
+site/dist
+examples/**/out.html
 coverage
 *.log
 .DS_Store

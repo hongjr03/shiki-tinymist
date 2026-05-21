@@ -166,6 +166,20 @@ export default defineNuxtConfig({
 
 Full-feature examples for every adapter live in `examples/`.
 
+## GitHub Pages Preview
+
+The repository includes a static preview site for all adapter examples.
+
+```sh
+npm run pages:build
+```
+
+This writes `site/dist/index.html`. The GitHub Actions workflow at
+`.github/workflows/pages.yml` builds the Tinymist WASM package, generates the
+preview, uploads `site/dist` as a Pages artifact, and deploys it with GitHub
+Pages. In the repository settings, set Pages to use **GitHub Actions** as the
+publishing source.
+
 ## Marker Syntax
 
 Use a Typst line comment under the target code.

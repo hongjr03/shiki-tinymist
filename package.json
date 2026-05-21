@@ -68,6 +68,7 @@
   "files": [
     "dist",
     "examples",
+    "!examples/**/out.html",
     "*.css",
     "README.md"
   ],
@@ -83,6 +84,7 @@
     "dev": "tsup src/index.ts --format esm --dts --watch",
     "tinymist:build": "cd vendor/tinymist/crates/tinymist && wasm-pack build --target web --dev -- --no-default-features --features web,no-content-hint",
     "tinymist:check": "node scripts/check-tinymist-wasm.mjs",
+    "pages:build": "npm run build && npm run tinymist:check && node site/generate.mjs",
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
     "prepack": "npm run build"
@@ -93,11 +95,16 @@
   },
   "devDependencies": {
     "@types/node": "^25.9.1",
+    "markdown-it": "^14.1.1",
     "prettier": "^3.8.3",
+    "rehype-stringify": "^10.0.1",
+    "remark-parse": "^11.0.0",
+    "remark-rehype": "^11.1.2",
     "shiki": "^4.1.0",
     "tinymist": "file:vendor/tinymist/crates/tinymist/pkg",
     "tsup": "^8.5.1",
     "typescript": "^6.0.3",
+    "unified": "^11.0.5",
     "vitest": "^4.1.7"
   },
   "packageManager": "npm@11.12.1",
