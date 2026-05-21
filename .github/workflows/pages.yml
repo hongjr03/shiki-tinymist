@@ -61,7 +61,7 @@ jobs:
         run: npm ci
 
       - name: Build docs
-        run: npm run docs:build
+        run: npm run pages:build
         env:
           GITHUB_PAGES: "true"
 

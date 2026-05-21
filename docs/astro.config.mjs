@@ -1,11 +1,8 @@
 import { defineConfig } from "astro/config";
 import starlight from "@astrojs/starlight";
 import { adapters } from "./src/data/adapters.mjs";
-import { docsLink } from "./src/data/links.mjs";
 
 const isGitHubPages = process.env.GITHUB_PAGES === "true";
-const docsBase = isGitHubPages ? "/shiki-tinymist" : "";
-const docsHref = (path) => docsLink(path, docsBase);
 
 export default defineConfig({
   site: isGitHubPages ? "https://hongjr03.github.io" : undefined,
@@ -21,25 +18,23 @@ export default defineConfig({
         {
           label: "Start",
           items: [
-            { label: "Overview", link: docsHref("/") },
-            { label: "Install", link: docsHref("/install/") },
+            { label: "Overview", slug: "index" },
+            { label: "Install", slug: "install" },
           ],
         },
         {
           label: "Adapters",
           items: [
-            { label: "Adapter overview", link: docsHref("/adapters/") },
+            { label: "Adapter overview", link: "/adapters/" },
             ...adapters.map((adapter) => ({
               label: adapter.name,
-              link: docsHref(`/adapters/${adapter.id}/`),
+              link: `/adapters/${adapter.id}/`,
             })),
           ],
         },
         {
           label: "Reference",
-          items: [
-            { label: "Marker syntax", link: docsHref("/marker-syntax/") },
-          ],
+          items: [{ label: "Marker syntax", slug: "marker-syntax" }],
         },
       ],
     }),
