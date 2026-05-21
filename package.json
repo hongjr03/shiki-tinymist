@@ -4,15 +4,15 @@
   "description": "A Shiki transformer that enriches Typst code blocks with Tinymist WASM language-service hovers.",
   "type": "module",
   "license": "MIT",
-  "author": "",
+  "author": "hongjr03",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/your-name/shiki-tinymist.git"
+    "url": "git+https://github.com/hongjr03/shiki-tinymist.git"
   },
   "bugs": {
-    "url": "https://github.com/your-name/shiki-tinymist/issues"
+    "url": "https://github.com/hongjr03/shiki-tinymist/issues"
   },
-  "homepage": "https://github.com/your-name/shiki-tinymist#readme",
+  "homepage": "https://github.com/hongjr03/shiki-tinymist#readme",
   "keywords": [
     "shiki",
     "typst",
