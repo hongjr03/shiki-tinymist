@@ -1,0 +1,419 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>shiki-tinymist demo</title>
+    <style>
+      /* ===== Basic ===== */
+:root {
+  --tinymist-border-color: #8888;
+  --tinymist-underline-color: currentColor;
+  --tinymist-popup-bg: #f8f8f8;
+  --tinymist-popup-color: inherit;
+  --tinymist-popup-shadow: rgba(0, 0, 0, 0.08) 0px 1px 4px;
+  --tinymist-docs-color: #666;
+  --tinymist-docs-font: sans-serif;
+  --tinymist-code-font: inherit;
+  --tinymist-code-font-size: 1em;
+  --tinymist-error-color: #d45656;
+  --tinymist-error-bg: #d4565620;
+  --tinymist-warn-color: #c37d0d;
+  --tinymist-warn-bg: #c37d0d20;
+  --tinymist-info-color: #3772cf;
+  --tinymist-info-bg: #3772cf20;
+  --tinymist-hint-color: #1ba673;
+  --tinymist-hint-bg: #1ba67320;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tinymist * {
+    transition: none !important;
+  }
+}
+
+/* ===== Hover Info ===== */
+.tinymist:hover .tinymist-hover {
+  border-color: var(--tinymist-underline-color);
+}
+
+.tinymist .tinymist-hover {
+  border-bottom: 1px dotted transparent;
+  transition-timing-function: ease;
+  transition: border-color 0.3s;
+  position: relative;
+}
+
+.tinymist .tinymist-popup-container {
+  position: absolute;
+  opacity: 0;
+  display: none;
+  flex-direction: column;
+  transform: translateY(1.1em);
+  min-width: 16rem;
+  max-width: min(42rem, 80vw);
+  background: var(--tinymist-popup-bg);
+  color: var(--tinymist-popup-color);
+  border: 1px solid var(--tinymist-border-color);
+  transition: opacity 0.3s;
+  border-radius: 4px;
+  pointer-events: none;
+  z-index: 10;
+  user-select: none;
+  text-align: left;
+  white-space: pre-wrap;
+  box-shadow: var(--tinymist-popup-shadow);
+}
+
+.tinymist .tinymist-hover:hover .tinymist-popup-container,
+.tinymist .tinymist-hover:focus-within .tinymist-popup-container {
+  display: inline-flex;
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.tinymist .tinymist-popup-container:hover {
+  user-select: auto;
+}
+
+.tinymist-floating-root {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9999;
+}
+
+.tinymist-floating-root .tinymist-popup-container {
+  position: fixed;
+  transform: none;
+  max-height: calc(100vh - 16px);
+  overflow: auto;
+}
+
+.tinymist-floating-root .tinymist-popup-container[hidden] {
+  display: none !important;
+}
+
+.tinymist .tinymist-popup-arrow {
+  position: absolute;
+  top: -4px;
+  left: 1em;
+  border-top: 1px solid var(--tinymist-border-color);
+  border-right: 1px solid var(--tinymist-border-color);
+  background: var(--tinymist-popup-bg);
+  transform: rotate(-45deg);
+  width: 6px;
+  height: 6px;
+  pointer-events: none;
+}
+
+.tinymist-floating-root
+  .tinymist-popup-container[data-tinymist-placement='top']
+  .tinymist-popup-arrow {
+  top: auto;
+  bottom: -4px;
+  transform: rotate(135deg);
+}
+
+.tinymist .tinymist-popup-code,
+.tinymist .tinymist-popup-docs {
+  padding: 6px 8px !important;
+}
+
+.tinymist .tinymist-popup-code {
+  font-family: var(--tinymist-code-font);
+  font-size: var(--tinymist-code-font-size);
+}
+
+.tinymist .tinymist-popup-docs {
+  color: var(--tinymist-docs-color);
+  font-family: var(--tinymist-docs-font);
+  font-size: 0.8em;
+  border-top: 1px solid var(--tinymist-border-color);
+}
+
+/* ===== Diagnostics ===== */
+.tinymist .tinymist-diagnostic-line {
+  position: relative;
+  background-color: var(--tinymist-error-bg);
+  border-left: 3px solid var(--tinymist-error-color);
+  color: var(--tinymist-error-color);
+  padding: 6px 12px;
+  margin: 0.2em 0;
+  min-width: 100%;
+  width: max-content;
+}
+
+.tinymist .tinymist-diagnostic {
+  background: url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%206%203'%20enable-background%3D'new%200%200%206%203'%20height%3D'3'%20width%3D'6'%3E%3Cg%20fill%3D'%23c94824'%3E%3Cpolygon%20points%3D'5.5%2C0%202.5%2C3%201.1%2C3%204.1%2C0'%2F%3E%3Cpolygon%20points%3D'4%2C0%206%2C2%206%2C0.6%205.4%2C0'%2F%3E%3Cpolygon%20points%3D'0%2C2%201%2C3%202.4%2C3%200%2C0.6'%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E")
+    repeat-x bottom left;
+  padding-bottom: 2px;
+}
+
+.tinymist .tinymist-diagnostic-level-warning {
+  color: var(--tinymist-warn-color);
+  border-color: var(--tinymist-warn-color);
+  background-color: var(--tinymist-warn-bg);
+}
+
+.tinymist .tinymist-diagnostic.tinymist-diagnostic-level-warning {
+  background: url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%206%203'%20enable-background%3D'new%200%200%206%203'%20height%3D'3'%20width%3D'6'%3E%3Cg%20fill%3D'%23c37d0d'%3E%3Cpolygon%20points%3D'5.5%2C0%202.5%2C3%201.1%2C3%204.1%2C0'%2F%3E%3Cpolygon%20points%3D'4%2C0%206%2C2%206%2C0.6%205.4%2C0'%2F%3E%3Cpolygon%20points%3D'0%2C2%201%2C3%202.4%2C3%200%2C0.6'%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E")
+    repeat-x bottom left;
+}
+
+.tinymist .tinymist-diagnostic-level-information {
+  color: var(--tinymist-info-color);
+  border-color: var(--tinymist-info-color);
+  background-color: var(--tinymist-info-bg);
+}
+
+.tinymist .tinymist-diagnostic-level-hint {
+  color: var(--tinymist-hint-color);
+  border-color: var(--tinymist-hint-color);
+  background-color: var(--tinymist-hint-bg);
+}
+
+
+      :root {
+        color-scheme: dark;
+        font-family:
+          Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+          "Segoe UI", sans-serif;
+        background: #151515;
+        color: #ededed;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        display: grid;
+        place-items: center;
+        padding: 48px 24px;
+        box-sizing: border-box;
+      }
+
+      main {
+        width: min(860px, 100%);
+      }
+
+      header {
+        margin-bottom: 20px;
+      }
+
+      h1 {
+        margin: 0 0 8px;
+        font-size: 30px;
+        font-weight: 650;
+        line-height: 1.1;
+      }
+
+      p {
+        margin: 0;
+        color: #b8b8b8;
+        line-height: 1.6;
+      }
+
+      .frame {
+        border: 1px solid #333;
+        border-radius: 8px;
+        overflow: auto;
+        background: #121212;
+      }
+
+      .shiki {
+        margin: 0;
+        padding: 22px 24px;
+        font-size: 15px;
+        line-height: 1.75;
+      }
+
+      code {
+        font-family:
+          "JetBrains Mono", "SFMono-Regular", Consolas, "Liberation Mono",
+          monospace;
+      }
+
+      .tinymist .tinymist-popup-container {
+        --tinymist-popup-bg: #f6f1e8;
+        --tinymist-popup-color: #1a1a1a;
+        --tinymist-border-color: #d8cfbe;
+      }
+
+      .tinymist .tinymist-popup-code,
+      .tinymist .tinymist-popup-docs {
+        font-family:
+          "JetBrains Mono", "SFMono-Regular", Consolas, "Liberation Mono",
+          monospace;
+        font-size: 12px;
+        line-height: 1.55;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header>
+        <h1>shiki-tinymist</h1>
+        <p>Hover the underlined Typst identifiers to see Tinymist WASM hover output.</p>
+      </header>
+      <div class="frame">
+        <pre class="shiki vitesse-dark tinymist lsp" style="background-color:#121212;color:#dbd7caee" tabindex="0"><code><span class="line"><span style="color:#666666">#</span><span style="color:#4D9375">let</span><span style="color:#BD976A"> answer</span><span style="color:#666666"> =</span><span style="color:#4C9A91"> 42</span></span>
+<span class="line"><span style="color:#666666">#</span><span class="tinymist-hover" tabindex="0"><span class="tinymist-popup-container"><span class="tinymist-popup-arrow"></span><code class="tinymist-popup-code"><span style="color:#DBD7CAEE">let answer = int;</span></code><div class="tinymist-popup-docs">### Sampled Values</div><code class="tinymist-popup-code"><span style="color:#DBD7CAEE">42</span></code></span><span><span style="color:#80A665">answer</span></span></span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#666666">#</span><span style="color:#4D9375">let</span><span style="color:#80A665"> greet</span><span style="color:#666666">(</span><span style="color:#BD976A">name</span><span style="color:#666666">)</span><span style="color:#666666"> =</span><span style="color:#666666"> [</span><span style="color:#DBD7CAEE">Hello, </span><span style="color:#666666">#</span><span style="color:#80A665">name</span><span style="color:#666666">]</span></span>
+<span class="line"><span style="color:#666666">#</span><span class="tinymist-hover" tabindex="0"><span class="tinymist-popup-container"><span class="tinymist-popup-arrow"></span><code class="tinymist-popup-code"><span class="line"><span style="color:#DBD7CAEE">let greet(</span></span>
+<span class="line"><span style="color:#DBD7CAEE">  name: str,</span></span>
+<span class="line"><span style="color:#DBD7CAEE">) = str;</span></span></code><div class="tinymist-popup-docs"># Positional Parameters
+
+## name</div><code class="tinymist-popup-code"><span style="color:#DBD7CAEE">type: str</span></code></span><span><span style="color:#80A665">greet</span></span></span><span style="color:#666666">(</span><span style="color:#C98A7D77">"</span><span style="color:#C98A7D">Typst</span><span style="color:#C98A7D77">"</span><span style="color:#666666">)</span></span></code></pre>
+      </div>
+    </main>
+    <script>
+      // src/client.ts
+function initTinymistFloating(options = {}) {
+  if (typeof document === "undefined") {
+    return () => {
+    };
+  }
+  const root = resolveRoot(options.root);
+  const portal = options.portal ?? ensurePortalRoot();
+  const hoverSelector = options.hoverSelector ?? ".tinymist-hover";
+  const offset = options.offset ?? 8;
+  const padding = options.padding ?? 8;
+  const cleanups = [];
+  for (const anchor of root.querySelectorAll(hoverSelector)) {
+    let position2 = function() {
+      const anchorRect = anchor.getBoundingClientRect();
+      const viewportWidth = document.documentElement.clientWidth;
+      const viewportHeight = document.documentElement.clientHeight;
+      popupElement.style.left = "0px";
+      popupElement.style.top = "0px";
+      popupElement.style.maxWidth = `${Math.max(160, viewportWidth - padding * 2)}px`;
+      const popupRect = popupElement.getBoundingClientRect();
+      const left = clamp(
+        anchorRect.left,
+        padding,
+        viewportWidth - popupRect.width - padding
+      );
+      let top = anchorRect.bottom + offset;
+      let placement = "bottom";
+      if (top + popupRect.height > viewportHeight - padding && anchorRect.top - popupRect.height - offset >= padding) {
+        top = anchorRect.top - popupRect.height - offset;
+        placement = "top";
+      } else {
+        top = Math.min(top, viewportHeight - popupRect.height - padding);
+      }
+      popupElement.style.left = `${Math.max(padding, left)}px`;
+      popupElement.style.top = `${Math.max(padding, top)}px`;
+      popupElement.dataset.tinymistPlacement = placement;
+    };
+    var position = position2;
+    const popup = findDirectPopup(anchor);
+    if (!popup) {
+      continue;
+    }
+    const popupElement = popup;
+    const placeholder = document.createComment("tinymist-popup");
+    popupElement.before(placeholder);
+    portal.append(popupElement);
+    popupElement.classList.add("tinymist-floating-popup");
+    popupElement.hidden = true;
+    let hideTimer = 0;
+    let visible = false;
+    const clearHideTimer = () => {
+      if (hideTimer) {
+        window.clearTimeout(hideTimer);
+        hideTimer = 0;
+      }
+    };
+    const show = () => {
+      clearHideTimer();
+      if (!visible) {
+        visible = true;
+        popupElement.hidden = false;
+        popupElement.style.display = "inline-flex";
+        popupElement.style.opacity = "0";
+        popupElement.style.pointerEvents = "auto";
+        window.addEventListener("scroll", position2, true);
+        window.addEventListener("resize", position2);
+      }
+      position2();
+      popupElement.style.opacity = "1";
+    };
+    const hide = () => {
+      clearHideTimer();
+      if (!visible) {
+        return;
+      }
+      visible = false;
+      popupElement.hidden = true;
+      popupElement.style.display = "none";
+      popupElement.style.opacity = "0";
+      popupElement.style.pointerEvents = "none";
+      window.removeEventListener("scroll", position2, true);
+      window.removeEventListener("resize", position2);
+    };
+    const scheduleHide = () => {
+      clearHideTimer();
+      hideTimer = window.setTimeout(hide, 80);
+    };
+    anchor.addEventListener("mouseenter", show);
+    anchor.addEventListener("mouseleave", scheduleHide);
+    anchor.addEventListener("focusin", show);
+    anchor.addEventListener("focusout", scheduleHide);
+    popupElement.addEventListener("mouseenter", clearHideTimer);
+    popupElement.addEventListener("mouseleave", scheduleHide);
+    popupElement.addEventListener("focusout", scheduleHide);
+    cleanups.push(() => {
+      hide();
+      anchor.removeEventListener("mouseenter", show);
+      anchor.removeEventListener("mouseleave", scheduleHide);
+      anchor.removeEventListener("focusin", show);
+      anchor.removeEventListener("focusout", scheduleHide);
+      popupElement.removeEventListener("mouseenter", clearHideTimer);
+      popupElement.removeEventListener("mouseleave", scheduleHide);
+      popupElement.removeEventListener("focusout", scheduleHide);
+      popupElement.classList.remove("tinymist-floating-popup");
+      popupElement.removeAttribute("style");
+      popupElement.hidden = false;
+      placeholder.replaceWith(popupElement);
+    });
+  }
+  return () => {
+    for (const cleanup of cleanups.reverse()) {
+      cleanup();
+    }
+  };
+}
+function resolveRoot(root) {
+  if (typeof root === "string") {
+    return document.querySelector(root) ?? document;
+  }
+  return root ?? document;
+}
+function ensurePortalRoot() {
+  const existing = document.querySelector(
+    ".tinymist-floating-root"
+  );
+  if (existing) {
+    return existing;
+  }
+  const portal = document.createElement("div");
+  portal.className = "tinymist tinymist-floating-root";
+  document.body.append(portal);
+  return portal;
+}
+function findDirectPopup(anchor) {
+  for (const child of anchor.children) {
+    if (child.classList.contains("tinymist-popup-container")) {
+      return child;
+    }
+  }
+  return void 0;
+}
+function clamp(value, min, max) {
+  return Math.min(Math.max(value, min), Math.max(min, max));
+}
+initTinymistFloating()
+    </script>
+  </body>
+</html>

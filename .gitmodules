@@ -1,0 +1,4 @@
+[submodule "vendor/tinymist"]
+	path = vendor/tinymist
+	url = https://github.com/Myriad-Dreamin/tinymist.git
+	ignore = untracked

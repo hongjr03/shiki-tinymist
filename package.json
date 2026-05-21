@@ -1,0 +1,78 @@
+{
+  "name": "shiki-tinymist",
+  "version": "0.0.0",
+  "description": "A Shiki transformer that enriches Typst code blocks with Tinymist WASM language-service hovers.",
+  "type": "module",
+  "license": "MIT",
+  "author": "",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/your-name/shiki-tinymist.git"
+  },
+  "bugs": {
+    "url": "https://github.com/your-name/shiki-tinymist/issues"
+  },
+  "homepage": "https://github.com/your-name/shiki-tinymist#readme",
+  "keywords": [
+    "shiki",
+    "typst",
+    "tinymist",
+    "lsp",
+    "transformer"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./core": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./client": {
+      "types": "./dist/client.d.ts",
+      "import": "./dist/client.js"
+    },
+    "./style.css": "./style.css",
+    "./style-rich.css": "./style-rich.css",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "*.css",
+    "README.md"
+  ],
+  "sideEffects": [
+    "*.css"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "tsup",
+    "demo": "npm run build && npm run tinymist:check && node demo/generate.mjs",
+    "dev": "tsup src/index.ts --format esm --dts --watch",
+    "tinymist:build": "cd vendor/tinymist/crates/tinymist && wasm-pack build --target web --dev -- --no-default-features --features web,no-content-hint",
+    "tinymist:check": "node scripts/check-tinymist-wasm.mjs",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "prepack": "npm run build"
+  },
+  "peerDependencies": {
+    "shiki": ">=3 <5",
+    "tinymist": ">=0.14.18"
+  },
+  "devDependencies": {
+    "@types/node": "^25.9.1",
+    "prettier": "^3.8.3",
+    "shiki": "^4.1.0",
+    "tinymist": "file:vendor/tinymist/crates/tinymist/pkg",
+    "tsup": "^8.5.1",
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.7"
+  },
+  "packageManager": "npm@11.12.1",
+  "dependencies": {
+    "@shikijs/core": "^4.1.0"
+  }
+}

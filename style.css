@@ -1,0 +1,167 @@
+/* ===== Basic ===== */
+:root {
+  --tinymist-border-color: #8888;
+  --tinymist-underline-color: currentColor;
+  --tinymist-popup-bg: #f8f8f8;
+  --tinymist-popup-color: inherit;
+  --tinymist-popup-shadow: rgba(0, 0, 0, 0.08) 0px 1px 4px;
+  --tinymist-docs-color: #666;
+  --tinymist-docs-font: sans-serif;
+  --tinymist-code-font: inherit;
+  --tinymist-code-font-size: 1em;
+  --tinymist-error-color: #d45656;
+  --tinymist-error-bg: #d4565620;
+  --tinymist-warn-color: #c37d0d;
+  --tinymist-warn-bg: #c37d0d20;
+  --tinymist-info-color: #3772cf;
+  --tinymist-info-bg: #3772cf20;
+  --tinymist-hint-color: #1ba673;
+  --tinymist-hint-bg: #1ba67320;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tinymist * {
+    transition: none !important;
+  }
+}
+
+/* ===== Hover Info ===== */
+.tinymist:hover .tinymist-hover {
+  border-color: var(--tinymist-underline-color);
+}
+
+.tinymist .tinymist-hover {
+  border-bottom: 1px dotted transparent;
+  transition-timing-function: ease;
+  transition: border-color 0.3s;
+  position: relative;
+}
+
+.tinymist .tinymist-popup-container {
+  position: absolute;
+  opacity: 0;
+  display: none;
+  flex-direction: column;
+  transform: translateY(1.1em);
+  min-width: 16rem;
+  max-width: min(42rem, 80vw);
+  background: var(--tinymist-popup-bg);
+  color: var(--tinymist-popup-color);
+  border: 1px solid var(--tinymist-border-color);
+  transition: opacity 0.3s;
+  border-radius: 4px;
+  pointer-events: none;
+  z-index: 10;
+  user-select: none;
+  text-align: left;
+  white-space: pre-wrap;
+  box-shadow: var(--tinymist-popup-shadow);
+}
+
+.tinymist .tinymist-hover:hover .tinymist-popup-container,
+.tinymist .tinymist-hover:focus-within .tinymist-popup-container {
+  display: inline-flex;
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.tinymist .tinymist-popup-container:hover {
+  user-select: auto;
+}
+
+.tinymist-floating-root {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9999;
+}
+
+.tinymist-floating-root .tinymist-popup-container {
+  position: fixed;
+  transform: none;
+  max-height: calc(100vh - 16px);
+  overflow: auto;
+}
+
+.tinymist-floating-root .tinymist-popup-container[hidden] {
+  display: none !important;
+}
+
+.tinymist .tinymist-popup-arrow {
+  position: absolute;
+  top: -4px;
+  left: 1em;
+  border-top: 1px solid var(--tinymist-border-color);
+  border-right: 1px solid var(--tinymist-border-color);
+  background: var(--tinymist-popup-bg);
+  transform: rotate(-45deg);
+  width: 6px;
+  height: 6px;
+  pointer-events: none;
+}
+
+.tinymist-floating-root
+  .tinymist-popup-container[data-tinymist-placement='top']
+  .tinymist-popup-arrow {
+  top: auto;
+  bottom: -4px;
+  transform: rotate(135deg);
+}
+
+.tinymist .tinymist-popup-code,
+.tinymist .tinymist-popup-docs {
+  padding: 6px 8px !important;
+}
+
+.tinymist .tinymist-popup-code {
+  font-family: var(--tinymist-code-font);
+  font-size: var(--tinymist-code-font-size);
+}
+
+.tinymist .tinymist-popup-docs {
+  color: var(--tinymist-docs-color);
+  font-family: var(--tinymist-docs-font);
+  font-size: 0.8em;
+  border-top: 1px solid var(--tinymist-border-color);
+}
+
+/* ===== Diagnostics ===== */
+.tinymist .tinymist-diagnostic-line {
+  position: relative;
+  background-color: var(--tinymist-error-bg);
+  border-left: 3px solid var(--tinymist-error-color);
+  color: var(--tinymist-error-color);
+  padding: 6px 12px;
+  margin: 0.2em 0;
+  min-width: 100%;
+  width: max-content;
+}
+
+.tinymist .tinymist-diagnostic {
+  background: url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%206%203'%20enable-background%3D'new%200%200%206%203'%20height%3D'3'%20width%3D'6'%3E%3Cg%20fill%3D'%23c94824'%3E%3Cpolygon%20points%3D'5.5%2C0%202.5%2C3%201.1%2C3%204.1%2C0'%2F%3E%3Cpolygon%20points%3D'4%2C0%206%2C2%206%2C0.6%205.4%2C0'%2F%3E%3Cpolygon%20points%3D'0%2C2%201%2C3%202.4%2C3%200%2C0.6'%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E")
+    repeat-x bottom left;
+  padding-bottom: 2px;
+}
+
+.tinymist .tinymist-diagnostic-level-warning {
+  color: var(--tinymist-warn-color);
+  border-color: var(--tinymist-warn-color);
+  background-color: var(--tinymist-warn-bg);
+}
+
+.tinymist .tinymist-diagnostic.tinymist-diagnostic-level-warning {
+  background: url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%206%203'%20enable-background%3D'new%200%200%206%203'%20height%3D'3'%20width%3D'6'%3E%3Cg%20fill%3D'%23c37d0d'%3E%3Cpolygon%20points%3D'5.5%2C0%202.5%2C3%201.1%2C3%204.1%2C0'%2F%3E%3Cpolygon%20points%3D'4%2C0%206%2C2%206%2C0.6%205.4%2C0'%2F%3E%3Cpolygon%20points%3D'0%2C2%201%2C3%202.4%2C3%200%2C0.6'%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E")
+    repeat-x bottom left;
+}
+
+.tinymist .tinymist-diagnostic-level-information {
+  color: var(--tinymist-info-color);
+  border-color: var(--tinymist-info-color);
+  background-color: var(--tinymist-info-bg);
+}
+
+.tinymist .tinymist-diagnostic-level-hint {
+  color: var(--tinymist-hint-color);
+  border-color: var(--tinymist-hint-color);
+  background-color: var(--tinymist-hint-bg);
+}
