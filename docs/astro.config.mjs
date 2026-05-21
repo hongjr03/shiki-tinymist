@@ -2,7 +2,11 @@ import { defineConfig } from 'astro/config'
 import starlight from '@astrojs/starlight'
 import { adapterSidebarItems } from './src/data/adapters.mjs'
 
+const isGitHubPages = process.env.GITHUB_PAGES === 'true'
+
 export default defineConfig({
+  site: isGitHubPages ? 'https://hongjr03.github.io' : undefined,
+  base: isGitHubPages ? '/shiki-tinymist' : undefined,
   integrations: [
     starlight({
       title: 'shiki-tinymist',

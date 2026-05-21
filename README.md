@@ -178,6 +178,10 @@ npm run docs:dev
 npm run docs:build
 ```
 
+GitHub Pages deployment is still handled by `.github/workflows/pages.yml`. The
+workflow builds the Starlight site with the GitHub Pages base path and uploads
+`docs/dist`.
+
 ## Marker Syntax
 
 Use a Typst line comment under the target code.
