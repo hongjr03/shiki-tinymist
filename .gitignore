@@ -1,6 +1,8 @@
 node_modules
+.astro
 dist
-site/dist
+docs/.astro
+docs/dist
 examples/**/out.html
 coverage
 *.log

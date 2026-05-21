@@ -1,0 +1,47 @@
+---
+import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro'
+import AnchorHeading from '@astrojs/starlight/components/AnchorHeading.astro'
+import { adapters } from '../../data/adapters.mjs'
+
+const headings = [
+  { depth: 2, slug: 'adapter-routes', text: 'Adapter routes' },
+  { depth: 2, slug: 'maintenance-model', text: 'Maintenance model' },
+]
+---
+
+<StarlightPage
+  frontmatter={{
+    title: 'Adapter overview',
+    description:
+      'Framework-specific shiki-tinymist documentation routes generated from one adapter registry.',
+  }}
+  headings={headings}
+>
+  <p>
+    Each adapter has its own route with a rendered Typst preview and the source
+    files required to wire that framework. The routes are generated from one
+    registry instead of a hand-written static page generator.
+  </p>
+
+  <AnchorHeading level={2} id="adapter-routes">Adapter routes</AnchorHeading>
+  <div class="adapter-grid">
+    {
+      adapters.map((adapter) => (
+        <a class="adapter-card" href={`/adapters/${adapter.id}/`}>
+          <span>{adapter.name}</span>
+          <code>{adapter.entry}</code>
+          <p>{adapter.summary}</p>
+        </a>
+      ))
+    }
+  </div>
+
+  <AnchorHeading level={2} id="maintenance-model"
+    >Maintenance model</AnchorHeading
+  >
+  <p>
+    Add or update adapters in <code>docs/src/data/adapters.mjs</code>. The
+    sidebar, overview, dynamic adapter routes, rendered preview, and source file
+    panels all read from that registry.
+  </p>
+</StarlightPage>

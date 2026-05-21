@@ -82,9 +82,11 @@
     "build": "tsup",
     "demo": "npm run build && npm run tinymist:check && node demo/generate.mjs",
     "dev": "tsup src/index.ts --format esm --dts --watch",
+    "docs:build": "npm run build && npm run tinymist:check && astro --root docs build",
+    "docs:dev": "npm run build && npm run tinymist:check && astro --root docs dev",
+    "docs:preview": "astro --root docs preview",
     "tinymist:build": "cd vendor/tinymist/crates/tinymist && wasm-pack build --target web --dev -- --no-default-features --features web,no-content-hint",
     "tinymist:check": "node scripts/check-tinymist-wasm.mjs",
-    "pages:build": "npm run build && npm run tinymist:check && node site/generate.mjs",
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
     "prepack": "npm run build"
@@ -94,7 +96,9 @@
     "tinymist": ">=0.14.18"
   },
   "devDependencies": {
+    "@astrojs/starlight": "^0.39.2",
     "@types/node": "^25.9.1",
+    "astro": "^6.3.6",
     "markdown-it": "^14.1.1",
     "prettier": "^3.8.3",
     "rehype-stringify": "^10.0.1",

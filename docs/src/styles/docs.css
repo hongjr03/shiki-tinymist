@@ -1,0 +1,112 @@
+:root {
+  --sl-content-width: 52rem;
+}
+
+.adapter-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.adapter-card {
+  display: grid;
+  gap: 0.5rem;
+  padding: 1rem;
+  border: 1px solid var(--sl-color-gray-5);
+  border-radius: 0.5rem;
+  color: var(--sl-color-white);
+  text-decoration: none;
+  background: var(--sl-color-gray-6);
+}
+
+.adapter-card:hover {
+  border-color: var(--sl-color-accent);
+}
+
+.adapter-card span {
+  font-weight: 700;
+}
+
+.adapter-card code {
+  overflow-wrap: anywhere;
+}
+
+.adapter-card p {
+  margin: 0;
+  color: var(--sl-color-gray-2);
+}
+
+.adapter-lead {
+  font-size: 1.05rem;
+}
+
+.adapter-meta {
+  display: grid;
+  gap: 0.75rem;
+  margin: 1.25rem 0 2rem;
+}
+
+.adapter-meta div {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.adapter-meta dt {
+  color: var(--sl-color-gray-2);
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.adapter-meta dd {
+  margin: 0;
+}
+
+.tinymist-doc-preview {
+  overflow: auto;
+  border: 1px solid var(--sl-color-gray-5);
+  border-radius: 0.5rem;
+  background: #0f0f0e;
+}
+
+.tinymist-doc-preview h1 {
+  margin: 0;
+  padding: 1rem 1rem 0;
+  font-size: 1.15rem;
+}
+
+.tinymist-doc-preview .shiki {
+  margin: 0;
+  min-width: max-content;
+  padding: 1rem;
+  font-size: 0.88rem;
+  line-height: 1.7;
+}
+
+.source-list {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.source-panel {
+  border: 1px solid var(--sl-color-gray-5);
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+
+.source-panel summary {
+  cursor: pointer;
+  padding: 0.75rem 1rem;
+  color: var(--sl-color-accent-high);
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+.source-panel pre {
+  margin: 0;
+  max-height: 28rem;
+  overflow: auto;
+  border-top: 1px solid var(--sl-color-gray-5);
+  border-radius: 0;
+  font-size: 0.8rem;
+}

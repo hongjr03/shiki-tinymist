@@ -166,19 +166,17 @@ export default defineNuxtConfig({
 
 Full-feature examples for every adapter live in `examples/`.
 
-## GitHub Pages Preview
+## Documentation Site
 
-The repository includes a static preview site for all adapter examples.
+The documentation site is an Astro Starlight project in `docs/`. Adapter pages
+are generated from `docs/src/data/adapters.mjs` and reuse the runnable fixtures
+in `examples/`, so adding an adapter updates the sidebar, overview, preview, and
+source panels from one registry.
 
 ```sh
-npm run pages:build
+npm run docs:dev
+npm run docs:build
 ```
-
-This writes `site/dist/index.html`. The GitHub Actions workflow at
-`.github/workflows/pages.yml` builds the Tinymist WASM package, generates the
-preview, uploads `site/dist` as a Pages artifact, and deploys it with GitHub
-Pages. In the repository settings, set Pages to use **GitHub Actions** as the
-publishing source.
 
 ## Marker Syntax
 

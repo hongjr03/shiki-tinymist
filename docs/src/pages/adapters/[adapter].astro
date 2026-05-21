@@ -1,0 +1,75 @@
+---
+import 'shiki-tinymist/style-rich.css'
+import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro'
+import AnchorHeading from '@astrojs/starlight/components/AnchorHeading.astro'
+import { adapters } from '../../data/adapters.mjs'
+import { loadAdapterPreview } from '../../lib/preview.mjs'
+
+export function getStaticPaths() {
+  return adapters.map((adapter) => ({
+    params: { adapter: adapter.id },
+    props: { adapter },
+  }))
+}
+
+const { adapter } = Astro.props
+const preview = await loadAdapterPreview(adapter)
+const headings = [
+  { depth: 2, slug: 'rendered-preview', text: 'Rendered preview' },
+  { depth: 2, slug: 'integration-surface', text: 'Integration surface' },
+  { depth: 2, slug: 'source-files', text: 'Source files' },
+]
+---
+
+<StarlightPage
+  frontmatter={{
+    title: `${adapter.name} adapter`,
+    description: adapter.summary,
+  }}
+  headings={headings}
+>
+  <p class="adapter-lead">{adapter.summary}</p>
+  <dl class="adapter-meta">
+    <div>
+      <dt>Package entry</dt>
+      <dd><code>{adapter.entry}</code></dd>
+    </div>
+    <div>
+      <dt>Example content</dt>
+      <dd><code>{adapter.content}</code></dd>
+    </div>
+  </dl>
+
+  <AnchorHeading level={2} id="rendered-preview"
+    >Rendered preview</AnchorHeading
+  >
+  <div class="tinymist-doc-preview" set:html={preview.html} />
+
+  <AnchorHeading level={2} id="integration-surface"
+    >Integration surface</AnchorHeading
+  >
+  <p>
+    The rendered preview uses the same example content tracked under
+    <code>examples/</code>. The framework-specific setup lives in the source
+    files below, so the docs route and executable example stay tied to the same
+    fixture.
+  </p>
+
+  <AnchorHeading level={2} id="source-files">Source files</AnchorHeading>
+  <div class="source-list">
+    {
+      preview.files.map((file) => (
+        <details class="source-panel">
+          <summary>{file.path}</summary>
+          <pre><code>{file.content}</code></pre>
+        </details>
+      ))
+    }
+  </div>
+</StarlightPage>
+
+<script>
+  import { initTinymistFloating } from 'shiki-tinymist/client'
+
+  initTinymistFloating()
+</script>
