@@ -31,11 +31,23 @@ jobs:
         with:
           node-version: 20
           cache: npm
+          cache-dependency-path: package-lock.json
 
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@1.91
         with:
           targets: wasm32-unknown-unknown
+
+      - name: Cache Tinymist Rust build
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/git
+            ~/.cargo/registry
+            vendor/tinymist/target
+          key: ${{ runner.os }}-tinymist-rust-${{ hashFiles('vendor/tinymist/Cargo.lock', 'vendor/tinymist/**/*.toml', 'vendor/tinymist/crates/tinymist/**/*.rs') }}
+          restore-keys: |
+            ${{ runner.os }}-tinymist-rust-
 
       - name: Setup wasm-pack
         uses: jetli/wasm-pack-action@v0.4.0
@@ -51,7 +63,7 @@ jobs:
       - name: Build docs
         run: npm run docs:build
         env:
-          GITHUB_PAGES: 'true'
+          GITHUB_PAGES: "true"
 
       - name: Configure Pages
         uses: actions/configure-pages@v5
