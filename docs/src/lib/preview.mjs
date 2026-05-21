@@ -6,6 +6,7 @@ import { pathToFileURL } from "node:url";
 import MarkdownIt from "markdown-it";
 import {
   createTinymistWasmProvider,
+  defaultTinymistTheme,
   renderTinymistMarkdown,
 } from "shiki-tinymist";
 
@@ -13,7 +14,6 @@ const root = findRepositoryRoot();
 const markdown = new MarkdownIt({ html: true });
 const providerPromise = createProvider();
 const previewCache = new Map();
-const previewTheme = "night-owl";
 
 export async function loadAdapterPreview(adapter) {
   const cached = previewCache.get(adapter.id);
@@ -33,7 +33,7 @@ async function renderAdapterPreview(adapter) {
   const processed = await renderTinymistMarkdown(source, {
     explicitTrigger: true,
     provider: await providerPromise,
-    theme: previewTheme,
+    theme: defaultTinymistTheme,
   });
   const files = await Promise.all(
     adapter.files.map(async (file) => ({

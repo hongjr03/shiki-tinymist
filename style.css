@@ -1,18 +1,18 @@
 /* ===== Basic ===== */
 :root {
-  --tinymist-border-color: #6b728080;
+  --tinymist-border-color: #444d5680;
   --tinymist-underline-color: currentColor;
-  --tinymist-highlighted-border: #c37d0d50;
-  --tinymist-highlighted-bg: #c37d0d20;
-  --tinymist-popup-bg: #1e1e1e;
-  --tinymist-popup-color: #d4d4d4;
+  --tinymist-highlighted-border: #ffd33d66;
+  --tinymist-highlighted-bg: #ffd33d22;
+  --tinymist-popup-bg: #24292e;
+  --tinymist-popup-color: #e1e4e8;
   --tinymist-popup-shadow: rgba(0, 0, 0, 0.28) 0px 8px 24px;
-  --tinymist-docs-color: #a8a8a8;
+  --tinymist-docs-color: #959da5;
   --tinymist-docs-font: sans-serif;
   --tinymist-code-font: inherit;
   --tinymist-code-font-size: 1em;
-  --tinymist-muted-color: #8b949e;
-  --tinymist-completion-bg: var(--tinymist-popup-bg);
+  --tinymist-muted-color: #959da5;
+  --tinymist-completion-bg: #2f363d;
   --tinymist-completion-color: var(--tinymist-popup-color);
   --tinymist-completion-kind-color: var(--tinymist-muted-color);
   --tinymist-completion-detail-color: var(--tinymist-muted-color);

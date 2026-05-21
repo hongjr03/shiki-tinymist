@@ -1,23 +1,24 @@
-import { mkdir, readFile, writeFile } from 'node:fs/promises'
-import { dirname, join } from 'node:path'
-import { fileURLToPath, pathToFileURL } from 'node:url'
-import { codeToHtml } from 'shiki'
+import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { dirname, join } from "node:path";
+import { fileURLToPath, pathToFileURL } from "node:url";
+import { codeToHtml } from "shiki";
 import {
   createTinymistTransformer,
   createTinymistWasmProvider,
-} from '../dist/index.js'
+  defaultTinymistTheme,
+} from "../dist/index.js";
 
-const here = dirname(fileURLToPath(import.meta.url))
-const projectRoot = join(here, '..')
-const outputPath = join(here, 'index.html')
+const here = dirname(fileURLToPath(import.meta.url));
+const projectRoot = join(here, "..");
+const outputPath = join(here, "index.html");
 const tinymistPkg = join(
   projectRoot,
-  'vendor',
-  'tinymist',
-  'crates',
-  'tinymist',
-  'pkg',
-)
+  "vendor",
+  "tinymist",
+  "crates",
+  "tinymist",
+  "pkg",
+);
 
 const code = `// @noErrors
 #let hidden = 42
@@ -34,28 +35,28 @@ const code = `// @noErrors
 //    ^|
 
 #answer
-// ^^^^^^`
+// ^^^^^^`;
 
-const tinymist = await import(pathToFileURL(join(tinymistPkg, 'tinymist.js')))
-const wasm = await readFile(join(tinymistPkg, 'tinymist_bg.wasm'))
+const tinymist = await import(pathToFileURL(join(tinymistPkg, "tinymist.js")));
+const wasm = await readFile(join(tinymistPkg, "tinymist_bg.wasm"));
 const transformer = await createTinymistTransformer(code, {
   provider: createTinymistWasmProvider({
     module: tinymist,
     moduleOrPath: wasm,
   }),
-})
+});
 const highlighted = await codeToHtml(code, {
-  lang: 'typst',
-  theme: 'vitesse-dark',
+  lang: "typst",
+  theme: defaultTinymistTheme,
   transformers: [transformer],
-})
-const tinymistCss = await readFile(join(projectRoot, 'style.css'), 'utf8')
+});
+const tinymistCss = await readFile(join(projectRoot, "style.css"), "utf8");
 const tinymistClient = await readFile(
-  join(projectRoot, 'dist', 'client.js'),
-  'utf8',
-)
+  join(projectRoot, "dist", "client.js"),
+  "utf8",
+);
 
-await mkdir(here, { recursive: true })
+await mkdir(here, { recursive: true });
 await writeFile(
   outputPath,
   renderPage({
@@ -63,9 +64,9 @@ await writeFile(
     tinymistCss,
     tinymistClient,
   }),
-)
+);
 
-console.log(`Wrote ${outputPath}`)
+console.log(`Wrote ${outputPath}`);
 
 function renderPage({ highlighted, tinymistCss, tinymistClient }) {
   return `<!doctype html>
@@ -161,15 +162,15 @@ function renderPage({ highlighted, tinymistCss, tinymistClient }) {
     </script>
   </body>
 </html>
-`
+`;
 }
 
 function inlineClient(script) {
   return script
     .replace(
       /\nexport \{\n  initTinymistFloating\n\};\n?/,
-      '\ninitTinymistFloating()\n',
+      "\ninitTinymistFloating()\n",
     )
-    .replace(/\n\/\/# sourceMappingURL=client\.js\.map\s*$/, '')
-    .replaceAll('</script>', '<\\/script>')
+    .replace(/\n\/\/# sourceMappingURL=client\.js\.map\s*$/, "")
+    .replaceAll("</script>", "<\\/script>");
 }

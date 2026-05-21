@@ -22,7 +22,7 @@ const transformer = await createTinymistTransformer(code);
 
 const html = await codeToHtml(code, {
   lang: "typst",
-  theme: "night-owl",
+  theme: "github-dark",
   transformers: [transformer],
 });
 ```
