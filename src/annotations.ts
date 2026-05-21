@@ -1,11 +1,7 @@
 import { lineKey, parseTinymistCode } from './parser.js'
-import type {
-  ParsedTinymistCode,
-  TinymistDiagnostic,
-  TinymistNode,
-  TinymistQueryResult,
-  TinymistShikiReturn,
-} from './types.js'
+import type { ParsedTinymistCode } from './types/source.js'
+import type { TinymistDiagnostic, TinymistQueryResult } from './types/query.js'
+import type { TinymistNode, TinymistShikiReturn } from './types/annotation.js'
 
 export function createTinymistReturnFromCode(
   code: string,

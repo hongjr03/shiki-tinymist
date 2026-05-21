@@ -1,4 +1,4 @@
-import type { TinymistCompletionItem } from '../types.js'
+import type { TinymistCompletionItem } from '../types/query.js'
 import { stringifyMarkup } from './markup.js'
 
 export function normalizeCompletionItems(

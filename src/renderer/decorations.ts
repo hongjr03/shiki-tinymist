@@ -1,10 +1,7 @@
 import { className, element, extendHastElement, text } from '../hast.js'
-import type {
-  HastElement,
-  HastNode,
-  TinymistDiagnosticNode,
-  TinymistRichRendererOptions,
-} from '../types.js'
+import type { TinymistDiagnosticNode } from '../types/annotation.js'
+import type { HastElement, HastNode } from '../types/hast.js'
+import type { TinymistRichRendererOptions } from '../types/renderer.js'
 
 export interface RenderDecorationOptions {
   classExtra: string

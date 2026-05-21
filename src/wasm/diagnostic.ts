@@ -1,4 +1,4 @@
-import type { TinymistDiagnostic } from '../types.js'
+import type { TinymistDiagnostic } from '../types/query.js'
 
 export function normalizeDiagnostic(
   value: unknown,

@@ -1,4 +1,4 @@
-import type { ParsedTinymistCode, TinymistDirective } from '../types.js'
+import type { ParsedTinymistCode, TinymistDirective } from '../types/source.js'
 
 export function parseDirectiveLine(
   line: string,

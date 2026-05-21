@@ -1,7 +1,7 @@
 import type {
   TinymistWasmModule,
   TinymistWasmProviderOptions,
-} from '../types.js'
+} from '../types/wasm.js'
 
 export async function loadTinymist(
   options: TinymistWasmProviderOptions,

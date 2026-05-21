@@ -21,7 +21,7 @@ import type {
   TinymistDirective,
   TinymistMarker,
   TinymistVirtualFile,
-} from './types.js'
+} from './types/source.js'
 
 const defaultTriggers = ['tinymist', 'typst-lsp']
 

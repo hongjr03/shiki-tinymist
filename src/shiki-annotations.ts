@@ -1,9 +1,6 @@
-import type {
-  HastElement,
-  HastNode,
-  TinymistNode,
-  TinymistRendererHooks,
-} from './types.js'
+import type { TinymistNode } from './types/annotation.js'
+import type { HastElement, HastNode } from './types/hast.js'
+import type { TinymistRendererHooks } from './types/renderer.js'
 import {
   createLineTokenSpans,
   insertNodesAfterLine,

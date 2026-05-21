@@ -1,11 +1,8 @@
 import { className, element, extendHastElement, text } from '../hast.js'
-import type {
-  HastElement,
-  HastNode,
-  TinymistCompletionItem,
-  TinymistCompletionNode,
-  TinymistRichRendererOptions,
-} from '../types.js'
+import type { TinymistCompletionNode } from '../types/annotation.js'
+import type { HastElement, HastNode } from '../types/hast.js'
+import type { TinymistCompletionItem } from '../types/query.js'
+import type { TinymistRichRendererOptions } from '../types/renderer.js'
 
 export interface RenderCompletionOptions {
   classExtra: string

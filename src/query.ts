@@ -1,12 +1,12 @@
 import { createTinymistReturn } from './annotations.js'
 import { parseTinymistCode } from './parser.js'
+import type { TinymistShikiReturn } from './types/annotation.js'
 import type {
   CreateTinymistTransformerOptions,
-  TinymistProvider,
-  TinymistShikiReturn,
-  TinymistVirtualFile,
   TransformerTinymistOptions,
-} from './types.js'
+} from './types/options.js'
+import type { TinymistProvider } from './types/query.js'
+import type { TinymistVirtualFile } from './types/source.js'
 import { createTinymistWasmProvider } from './wasm.js'
 
 export async function prepareTinymistCode(

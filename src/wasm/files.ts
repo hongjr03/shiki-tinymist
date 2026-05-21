@@ -1,4 +1,5 @@
-import type { TinymistQueryInput, TinymistVirtualFile } from '../types.js'
+import type { TinymistQueryInput } from '../types/query.js'
+import type { TinymistVirtualFile } from '../types/source.js'
 
 export function normalizeQueryFiles(
   input: TinymistQueryInput,

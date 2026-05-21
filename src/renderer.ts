@@ -1,8 +1,8 @@
+import type { HastNode } from './types/hast.js'
 import type {
-  HastNode,
   TinymistRendererHooks,
   TinymistRichRendererOptions,
-} from './types.js'
+} from './types/renderer.js'
 import { renderCompletionLine } from './renderer/completion.js'
 import {
   renderDiagnosticLine,

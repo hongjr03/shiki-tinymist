@@ -1,10 +1,7 @@
 import { className, element, extendHastElement, text } from '../hast.js'
-import type {
-  HastElement,
-  HastNode,
-  TinymistHoverNode,
-  TinymistRichRendererOptions,
-} from '../types.js'
+import type { TinymistHoverNode } from '../types/annotation.js'
+import type { HastElement, HastNode } from '../types/hast.js'
+import type { TinymistRichRendererOptions } from '../types/renderer.js'
 
 const fenceRE = /```([^\n`]*)\n([\s\S]*?)```/g
 

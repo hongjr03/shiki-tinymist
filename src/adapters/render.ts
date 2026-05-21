@@ -1,6 +1,6 @@
 import { codeToHast, codeToHtml } from 'shiki'
 import { createTinymistTransformer } from '../transformer.js'
-import type { CreateTinymistTransformerOptions } from '../types.js'
+import type { CreateTinymistTransformerOptions } from '../types/options.js'
 
 export interface TinymistRenderOptions extends CreateTinymistTransformerOptions {
   lang?: string

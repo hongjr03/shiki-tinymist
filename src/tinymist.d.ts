@@ -1,5 +1,6 @@
 declare module 'tinymist' {
-  import type { MaybePromise, TinymistWasmModule } from './types.js'
+  import type { MaybePromise } from './types/common.js'
+  import type { TinymistWasmModule } from './types/wasm.js'
 
   export const TinymistLanguageServer: TinymistWasmModule['TinymistLanguageServer']
   export const initSync: TinymistWasmModule['initSync']

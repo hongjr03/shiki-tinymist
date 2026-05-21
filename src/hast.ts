@@ -1,4 +1,4 @@
-import type { HastElement, HastExtension, HastNode } from './types.js'
+import type { HastElement, HastExtension, HastNode } from './types/hast.js'
 
 export function element(
   tagName: string,

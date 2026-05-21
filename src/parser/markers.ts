@@ -1,4 +1,4 @@
-import type { TinymistMarker } from '../types.js'
+import type { TinymistMarker } from '../types/source.js'
 import type { OutputLineDraft, QueryFileDraft } from './model.js'
 
 export function parseMarkerLine(

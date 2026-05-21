@@ -14,13 +14,13 @@ import {
   getShikiMeta,
 } from './shiki-hast.js'
 import { prepareTinymistCode } from './query.js'
+import type { TinymistShikiReturn } from './types/annotation.js'
+import type { HastElement } from './types/hast.js'
 import type {
   CreateTinymistTransformerOptions,
-  HastElement,
-  TinymistHover,
-  TinymistShikiReturn,
   TransformerTinymistOptions,
-} from './types.js'
+} from './types/options.js'
+import type { TinymistHover } from './types/query.js'
 
 export { prepareTinymistCode } from './query.js'
 

@@ -1,4 +1,4 @@
-import type { TinymistHover } from '../types.js'
+import type { TinymistHover } from '../types/query.js'
 import { stringifyMarkup } from './markup.js'
 
 export function stringifyHover(response: unknown): string {

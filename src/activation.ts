@@ -1,4 +1,4 @@
-import type { TransformerTinymistOptions } from './types.js'
+import type { TransformerTinymistOptions } from './types/options.js'
 
 export const defaultTinymistLangs = ['typ', 'typst']
 export const defaultTinymistTrigger = /\b(?:tinymist|typst-lsp)\b/

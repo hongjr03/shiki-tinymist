@@ -1,4 +1,5 @@
-import type { HastElement, HastNode, TinymistNode } from './types.js'
+import type { TinymistNode } from './types/annotation.js'
+import type { HastElement, HastNode } from './types/hast.js'
 
 export interface LineTokenSpan {
   line: number
