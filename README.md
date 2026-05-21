@@ -178,6 +178,8 @@ npm run docs:dev
 npm run docs:build
 ```
 
+The documentation site uses Astro and requires Node.js 22.12 or newer.
+
 GitHub Pages deployment is still handled by `.github/workflows/pages.yml`. The
 workflow builds the Starlight site with the GitHub Pages base path and uploads
 `docs/dist`.
