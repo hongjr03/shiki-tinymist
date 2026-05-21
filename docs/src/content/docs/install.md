@@ -12,33 +12,33 @@ npm install shiki-tinymist shiki tinymist
 Use the core transformer directly when you control the Shiki call:
 
 ```ts
-import { codeToHtml } from 'shiki'
-import { createTinymistTransformer } from 'shiki-tinymist'
+import { codeToHtml } from "shiki";
+import { createTinymistTransformer } from "shiki-tinymist";
 
 const code = `#let answer = 42
-//   ^?`
+//   ^?`;
 
-const transformer = await createTinymistTransformer(code)
+const transformer = await createTinymistTransformer(code);
 
 const html = await codeToHtml(code, {
-  lang: 'typst',
-  theme: 'vitesse-dark',
+  lang: "typst",
+  theme: "night-owl",
   transformers: [transformer],
-})
+});
 ```
 
 Import the rich styles in browser-facing bundles:
 
 ```ts
-import 'shiki-tinymist/style-rich.css'
+import "shiki-tinymist/style-rich.css";
 ```
 
 When code blocks can scroll, install the floating client so hover popups are moved outside the scroll container before positioning:
 
 ```ts
-import { initTinymistFloating } from 'shiki-tinymist/client'
+import { initTinymistFloating } from "shiki-tinymist/client";
 
-initTinymistFloating()
+initTinymistFloating();
 ```
 
 For Markdown integrations, set `explicitTrigger: true` to only process fences whose meta string contains `tinymist` or `typst-lsp`.
