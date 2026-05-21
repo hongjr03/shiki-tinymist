@@ -27,7 +27,7 @@ const headings = [
   <div class="adapter-grid">
     {
       adapters.map((adapter) => (
-        <a class="adapter-card" href={`/adapters/${adapter.id}/`}>
+        <a class="adapter-card" href={`${adapter.id}/`}>
           <span>{adapter.name}</span>
           <code>{adapter.entry}</code>
           <p>{adapter.summary}</p>

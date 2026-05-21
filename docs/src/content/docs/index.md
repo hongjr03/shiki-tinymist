@@ -7,10 +7,10 @@ hero:
   tagline: Typst language-service hovers, completions, diagnostics, and highlights rendered through Shiki.
   actions:
     - text: Install
-      link: /install/
+      link: install/
       icon: right-arrow
     - text: Adapter docs
-      link: /adapters/
+      link: adapters/
       variant: secondary
 ---
 
