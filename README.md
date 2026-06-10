@@ -9,29 +9,28 @@ block, then attaches hover data at `// ^?` marker positions.
 ## Install
 
 ```sh
-npm install shiki-tinymist shiki tinymist
+npm install shiki-tinymist shiki
 ```
 
-The WASM package must expose `TinymistLanguageServer`. The current Tinymist
-source builds this package with `wasm-pack`; older npm releases may not expose
-that class yet.
+Tinymist's WASM runtime is bundled with `shiki-tinymist`, so consumers do not
+need to install a separate `tinymist` package.
 
 ## Usage
 
 ```ts
-import { codeToHtml } from 'shiki'
-import { createTinymistTransformer } from 'shiki-tinymist'
+import { codeToHtml } from "shiki";
+import { createTinymistTransformer } from "shiki-tinymist";
 
 const code = `#let answer = 42
-//   ^?`
+//   ^?`;
 
-const transformer = await createTinymistTransformer(code)
+const transformer = await createTinymistTransformer(code);
 
 const html = await codeToHtml(code, {
-  lang: 'typst',
-  theme: 'vitesse-dark',
+  lang: "typst",
+  theme: "vitesse-dark",
   transformers: [transformer],
-})
+});
 ```
 
 When used in Markdown integrations, set `explicitTrigger: true` to only run on
@@ -47,16 +46,16 @@ code fences with `tinymist` or `typst-lsp` in the meta string.
 Import the default styles:
 
 ```ts
-import 'shiki-tinymist/style-rich.css'
+import "shiki-tinymist/style-rich.css";
 ```
 
 For scrollable code containers, install the small floating client so hover
 popups are moved outside the code block before they are positioned:
 
 ```ts
-import { initTinymistFloating } from 'shiki-tinymist/client'
+import { initTinymistFloating } from "shiki-tinymist/client";
 
-initTinymistFloating()
+initTinymistFloating();
 ```
 
 ## Framework Adapters
@@ -67,18 +66,18 @@ fences before the normal Markdown renderer finishes.
 ### Rehype
 
 ```ts
-import rehypeStringify from 'rehype-stringify'
-import remarkParse from 'remark-parse'
-import remarkRehype from 'remark-rehype'
-import { unified } from 'unified'
-import { rehypeTinymist } from 'shiki-tinymist/rehype'
+import rehypeStringify from "rehype-stringify";
+import remarkParse from "remark-parse";
+import remarkRehype from "remark-rehype";
+import { unified } from "unified";
+import { rehypeTinymist } from "shiki-tinymist/rehype";
 
 const html = await unified()
   .use(remarkParse)
   .use(remarkRehype)
   .use(rehypeTinymist({ explicitTrigger: true }))
   .use(rehypeStringify)
-  .process(markdown)
+  .process(markdown);
 ```
 
 ### markdown-it
@@ -87,81 +86,81 @@ const html = await unified()
 `renderTinymist` helper instead of replacing the sync fence renderer.
 
 ```ts
-import MarkdownIt from 'markdown-it'
-import { markdownItTinymist } from 'shiki-tinymist/markdown-it'
+import MarkdownIt from "markdown-it";
+import { markdownItTinymist } from "shiki-tinymist/markdown-it";
 
-const md = new MarkdownIt({ html: true })
-md.use(markdownItTinymist({ explicitTrigger: true }))
+const md = new MarkdownIt({ html: true });
+md.use(markdownItTinymist({ explicitTrigger: true }));
 
-const html = await md.renderTinymist(markdown)
+const html = await md.renderTinymist(markdown);
 ```
 
 ### VitePress
 
 ```ts
-import { defineConfig } from 'vitepress'
-import { vitepressTinymist } from 'shiki-tinymist/vitepress'
+import { defineConfig } from "vitepress";
+import { vitepressTinymist } from "shiki-tinymist/vitepress";
 
 export default defineConfig({
   vite: {
     plugins: [vitepressTinymist({ explicitTrigger: true })],
   },
-})
+});
 ```
 
 ### Astro
 
 ```ts
-import { defineConfig } from 'astro/config'
-import { astroTinymist } from 'shiki-tinymist/astro'
+import { defineConfig } from "astro/config";
+import { astroTinymist } from "shiki-tinymist/astro";
 
 export default defineConfig({
   integrations: [astroTinymist({ explicitTrigger: true })],
-})
+});
 ```
 
 ### MDX
 
 ```ts
-import { mdxTinymist } from 'shiki-tinymist/mdx'
+import { mdxTinymist } from "shiki-tinymist/mdx";
 
 export default {
   rehypePlugins: [mdxTinymist({ explicitTrigger: true })],
-}
+};
 ```
 
 ### Next
 
 ```ts
-import createMDX from '@next/mdx'
-import { nextTinymist } from 'shiki-tinymist/next'
+import createMDX from "@next/mdx";
+import { nextTinymist } from "shiki-tinymist/next";
 
 const withMDX = createMDX({
   options: {
     rehypePlugins: [nextTinymist({ explicitTrigger: true })],
   },
-})
+});
 
 export default withMDX({
-  pageExtensions: ['js', 'jsx', 'md', 'mdx', 'ts', 'tsx'],
-})
+  pageExtensions: ["js", "jsx", "md", "mdx", "ts", "tsx"],
+});
 ```
 
 ### Nuxt
 
 ```ts
 export default defineNuxtConfig({
-  css: ['shiki-tinymist/style-rich.css'],
+  css: ["shiki-tinymist/style-rich.css"],
   content: {
     build: {
       markdown: {
         rehypePlugins: {
-          'shiki-tinymist/nuxt': { explicitTrigger: true },
+          "shiki-tinymist/nuxt": { explicitTrigger: true },
         },
       },
     },
   },
-})
+});
 ```
 
 Full-feature examples for every adapter live in `examples/`.

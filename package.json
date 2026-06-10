@@ -1,6 +1,6 @@
 {
   "name": "shiki-tinymist",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "A Shiki transformer that enriches Typst code blocks with Tinymist WASM language-service hovers.",
   "type": "module",
   "license": "MIT",
@@ -79,7 +79,7 @@
     "node": ">=20"
   },
   "scripts": {
-    "build": "tsup",
+    "build": "tsup && npm run tinymist:copy",
     "demo": "npm run build && npm run tinymist:check && node demo/generate.mjs",
     "dev": "tsup src/index.ts --format esm --dts --watch",
     "docs:build": "npm run build && npm run tinymist:check && astro --root docs build",
@@ -87,15 +87,15 @@
     "docs:dev": "npm run build && npm run tinymist:check && astro --root docs dev",
     "docs:preview": "astro --root docs preview",
     "pages:build": "npm run docs:build && npm run docs:check-links",
-    "tinymist:build": "cd vendor/tinymist/crates/tinymist && wasm-pack build --target web --dev -- --no-default-features --features web,no-content-hint",
+    "tinymist:build": "cd vendor/tinymist/crates/tinymist && wasm-pack build --target web --release --no-opt -- --no-default-features --features web,no-content-hint",
     "tinymist:check": "node scripts/check-tinymist-wasm.mjs",
+    "tinymist:copy": "node scripts/copy-tinymist-wasm.mjs",
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
     "prepack": "npm run build"
   },
   "peerDependencies": {
-    "shiki": ">=3 <5",
-    "tinymist": ">=0.14.18"
+    "shiki": ">=3 <5"
   },
   "devDependencies": {
     "@astrojs/starlight": "^0.39.2",
